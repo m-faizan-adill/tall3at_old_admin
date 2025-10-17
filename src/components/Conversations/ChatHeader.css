@@ -1,0 +1,20 @@
+/* Chat Header - Modern WhatsApp Style, RTL, Brand Colors */
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2rem 1.25rem 2rem;
+  background: rgba(255,255,255,0.9);
+  border-bottom: 1px solid #e9ecef;
+  backdrop-filter: blur(8px);
+  direction: rtl;
+}
+.chat-user-info {
+  font-weight: 700;
+  color: #001062;
+  font-size: 1.1rem;
+}
+.chat-header-actions {
+  display: flex;
+  gap: 1rem;
+} 

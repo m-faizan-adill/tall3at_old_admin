@@ -1,0 +1,696 @@
+/* BookingForm Container */
+.booking-form-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.booking-form-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Header */
+.booking-form-header {
+  background: linear-gradient(135deg, #1fc1de 0%, #0ea5e9 100%);
+  color: white;
+  padding: 30px;
+  text-align: center;
+}
+
+.booking-form-header h2 {
+  margin: 0 0 10px 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.booking-form-header p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 16px;
+}
+
+/* Content */
+.booking-form-content {
+  padding: 30px;
+}
+
+/* Form Sections */
+.booking-form-section {
+  margin-bottom: 40px;
+}
+
+.booking-form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.booking-form-section-title svg {
+  color: #1fc1de;
+}
+
+/* Trip Search Container */
+.trip-search-container {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.trip-search-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.trip-search-icon {
+  position: absolute;
+  left: 15px;
+  color: #6b7280;
+  z-index: 2;
+}
+
+.trip-search-field {
+  width: 100%;
+  padding: 15px 45px 15px 45px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.trip-search-field:focus {
+  outline: none;
+  border-color: #1fc1de;
+  box-shadow: 0 0 0 3px rgba(31, 193, 222, 0.1);
+}
+
+.trip-clear-btn {
+  position: absolute;
+  right: 15px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.trip-clear-btn:hover {
+  background: #f3f4f6;
+  color: #ef4444;
+}
+
+/* Trip Dropdown */
+.trip-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.trip-loading {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.trip-no-results {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+/* Trip Options */
+.trip-option {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.trip-option:hover {
+  background: #f8fafc;
+}
+
+.trip-option.selected {
+  background: #e0f2fe;
+  border-left: 4px solid #1fc1de;
+}
+
+.trip-option:last-child {
+  border-bottom: none;
+}
+
+.trip-option-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-left: 15px;
+  flex-shrink: 0;
+}
+
+.trip-option-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.trip-option-details {
+  flex: 1;
+}
+
+.trip-option-title {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 5px;
+}
+
+.trip-option-location,
+.trip-option-price {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 3px;
+}
+
+.trip-option-location svg,
+.trip-option-price svg {
+  color: #1fc1de;
+}
+
+/* Selected Trip Card */
+.selected-trip-card {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background: #f8fafc;
+  border: 2px solid #e0f2fe;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.selected-trip-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-left: 20px;
+  flex-shrink: 0;
+}
+
+.selected-trip-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.selected-trip-info h4 {
+  margin: 0 0 10px 0;
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.selected-trip-info p {
+  margin: 5px 0;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.selected-trip-info svg {
+  color: #1fc1de;
+}
+
+/* Package Selection */
+.package-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.package-option {
+  padding: 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.package-option:hover {
+  border-color: #1fc1de;
+  box-shadow: 0 2px 8px rgba(31, 193, 222, 0.1);
+}
+
+.package-option.selected {
+  border-color: #1fc1de;
+  background: #e0f2fe;
+  box-shadow: 0 4px 12px rgba(31, 193, 222, 0.2);
+}
+
+.package-info h4 {
+  margin: 0 0 10px 0;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.package-info p {
+  margin: 0 0 15px 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.package-price {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1fc1de;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* Customer Search Container */
+.customer-search-container {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.customer-search-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.customer-search-icon {
+  position: absolute;
+  left: 15px;
+  color: #6b7280;
+  z-index: 2;
+}
+
+.customer-search-field {
+  width: 100%;
+  padding: 15px 45px 15px 45px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.customer-search-field:focus {
+  outline: none;
+  border-color: #1fc1de;
+  box-shadow: 0 0 0 3px rgba(31, 193, 222, 0.1);
+}
+
+.customer-clear-btn {
+  position: absolute;
+  right: 15px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.customer-clear-btn:hover {
+  background: #f3f4f6;
+  color: #ef4444;
+}
+
+/* Customer Dropdown */
+.customer-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.customer-loading {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.customer-no-results {
+  padding: 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+/* Customer Options */
+.customer-option {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.customer-option:hover {
+  background: #f8fafc;
+}
+
+.customer-option.selected {
+  background: #e0f2fe;
+  border-left: 4px solid #1fc1de;
+}
+
+.customer-option:last-child {
+  border-bottom: none;
+}
+
+.customer-option-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-left: 15px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+}
+
+.customer-option-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.customer-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e7eb;
+  color: #6b7280;
+  font-size: 18px;
+}
+
+.customer-option-details {
+  flex: 1;
+}
+
+.customer-option-name {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 3px;
+}
+
+.customer-option-phone,
+.customer-option-email {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+/* Selected Customer Card */
+.selected-customer-card {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background: #f8fafc;
+  border: 2px solid #e0f2fe;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.selected-customer-image {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-left: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+}
+
+.selected-customer-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.selected-customer-info h4 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.selected-customer-info p {
+  margin: 3px 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Form Grid */
+.booking-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* Form Groups */
+.booking-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.booking-form-group.booking-form-full-width {
+  grid-column: 1 / -1;
+}
+
+.booking-form-label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.booking-form-label svg {
+  color: #1fc1de;
+}
+
+.booking-form-input,
+.booking-form-select {
+  padding: 12px 15px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.booking-form-input:focus,
+.booking-form-select:focus {
+  outline: none;
+  border-color: #1fc1de;
+  box-shadow: 0 0 0 3px rgba(31, 193, 222, 0.1);
+}
+
+.booking-form-textarea {
+  padding: 15px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.booking-form-textarea:focus {
+  outline: none;
+  border-color: #1fc1de;
+  box-shadow: 0 0 0 3px rgba(31, 193, 222, 0.1);
+}
+
+/* Error Message */
+.booking-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+/* Form Actions */
+.booking-form-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.booking-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.booking-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.booking-btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.booking-btn-secondary:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.booking-btn-primary {
+  background: linear-gradient(135deg, #1fc1de 0%, #0ea5e9 100%);
+  color: white;
+}
+
+.booking-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(31, 193, 222, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .booking-form-container {
+    padding: 10px;
+  }
+  
+  .booking-form-content {
+    padding: 20px;
+  }
+  
+  .booking-form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .package-selection {
+    grid-template-columns: 1fr;
+  }
+  
+  .booking-form-actions {
+    flex-direction: column;
+  }
+  
+  .selected-trip-card,
+  .selected-customer-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .selected-trip-image,
+  .selected-customer-image {
+    margin-left: 0;
+    margin-bottom: 15px;
+  }
+  
+  .trip-option,
+  .customer-option {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .trip-option-image,
+  .customer-option-image {
+    margin-left: 0;
+    margin-bottom: 10px;
+  }
+}
+
+/* Loading States */
+.booking-form-input:disabled,
+.booking-form-select:disabled,
+.booking-form-textarea:disabled {
+  background: #f9fafb;
+  cursor: not-allowed;
+}
+
+/* Status Dropdown Styling */
+.booking-form-select option {
+  padding: 10px;
+}
+
+/* Custom Scrollbar for Dropdowns */
+.trip-dropdown::-webkit-scrollbar,
+.customer-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.trip-dropdown::-webkit-scrollbar-track,
+.customer-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.trip-dropdown::-webkit-scrollbar-thumb,
+.customer-dropdown::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.trip-dropdown::-webkit-scrollbar-thumb:hover,
+.customer-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+} 

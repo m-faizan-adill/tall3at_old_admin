@@ -1,0 +1,414 @@
+.category-details {
+  padding: 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  min-height: 100vh;
+  direction: rtl;
+}
+
+.category-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  background: white;
+  padding: 20px 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.category-details-btn-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.category-details-btn-back:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.category-details-btn-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #1fc1de, #001062);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+}
+
+.category-details-btn-edit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(31, 193, 222, 0.4);
+}
+
+.category-details-content {
+  display: grid;
+  gap: 24px;
+}
+
+/* Category Profile */
+.category-profile {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.category-avatar-section {
+  position: relative;
+}
+
+.category-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.category-status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+.category-status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+.category-status-badge.active {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.category-status-badge.inactive {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.category-info {
+  flex: 1;
+}
+
+.category-info h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.category-name-en {
+  color: #64748b;
+  font-size: 1.125rem;
+  margin: 0 0 16px 0;
+}
+
+.category-meta {
+  display: flex;
+  gap: 16px;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.category-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Statistics */
+.category-stats {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.category-stats h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 24px 0;
+}
+
+.category-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.category-stat-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.category-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: #1fc1de;
+}
+
+.category-stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.category-stat-icon.trips {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.category-stat-icon.bookings {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.category-stat-icon.revenue {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.category-stat-icon.rating {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.category-stat-content h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.category-stat-content p {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.category-stat-subtitle {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* Recent Content */
+.category-recent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.category-recent-trips,
+.category-recent-bookings {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.category-recent-trips h3,
+.category-recent-bookings h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 20px 0;
+}
+
+.category-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.category-recent-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.category-recent-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #1fc1de;
+}
+
+.category-item-info h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.category-item-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.category-item-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.category-item-status .category-status-badge {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+/* Error and No Data */
+.category-error-message {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 16px 20px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.category-no-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.category-no-data p {
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .category-recent {
+    grid-template-columns: 1fr;
+  }
+  
+  .category-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .category-details {
+    padding: 16px;
+  }
+
+  .category-details-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .category-profile {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .category-avatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  .category-info h2 {
+    font-size: 1.5rem;
+  }
+
+  .category-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .category-stat-card {
+    padding: 20px;
+  }
+
+  .category-stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.25rem;
+  }
+
+  .category-stat-content p {
+    font-size: 1.5rem;
+  }
+
+  .category-recent-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .category-item-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-profile {
+    padding: 20px;
+  }
+
+  .category-stats {
+    padding: 20px;
+  }
+
+  .category-recent-trips,
+  .category-recent-bookings {
+    padding: 20px;
+  }
+
+  .category-stat-card {
+    padding: 16px;
+  }
+
+  .category-stat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+} 

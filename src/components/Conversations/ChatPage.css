@@ -1,0 +1,40 @@
+/* ChatPage Layout - WhatsApp Style, RTL, Brand Colors */
+.chat-page-root {
+  display: flex;
+  flex-direction: row-reverse; /* Sidebar on the left, chat on the right, even in RTL */
+  height: 100vh;
+  width: 100vw;
+  background: #f0f2f5;
+  direction: rtl;
+  min-width: 0;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .chat-page-root {
+    flex-direction: column;
+  }
+}
+
+/* Chat Page - Main Layout */
+.chat-page {
+  display: flex;
+  height: 100vh;
+  background: linear-gradient(135deg, rgba(31, 193, 222, 0.02) 0%, rgba(0, 16, 98, 0.01) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.chat-main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chat-page {
+    flex-direction: column;
+  }
+} 

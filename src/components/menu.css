@@ -1,0 +1,15 @@
+.menu-item {
+    text-decoration: none;
+    color: white; /* Default color */
+    transition: color 0.3s;
+  }
+  
+  .menu-item:hover {
+    color: lightgrey; /* Change color on hover */
+  }
+  
+  .menu-item.active {
+    color: white; /* Color when selected */
+    background-color: rgba(255, 255, 255, 0.1); /* Optional: highlight background */
+    border-radius: 5px; /* Optional: rounded corners */
+  }

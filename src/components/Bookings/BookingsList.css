@@ -1,0 +1,308 @@
+/* Enhanced Table Design */
+.trips-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.trips-table th {
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  color: #1e293b;
+  font-weight: 600;
+  padding: 16px 12px;
+  text-align: right;
+  border-bottom: 2px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.trips-table th:hover {
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+  color: #1fc1de;
+}
+
+.trips-table td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.trips-table tr:hover {
+  background: #f8fafc;
+  transform: scale(1.001);
+  transition: all 0.2s ease;
+}
+
+/* Trip Info */
+.trip-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trip-title {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.trip-location {
+  color: #64748b;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* User and Provider Info */
+.user-info, .provider-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-name, .provider-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.user-phone, .provider-phone {
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* Status Dropdown with Colors */
+.status-dropdown {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 140px;
+}
+
+.status-dropdown:hover {
+  border-color: #1fc1de;
+  box-shadow: 0 2px 8px rgba(31, 193, 222, 0.2);
+}
+
+.status-dropdown:focus {
+  outline: none;
+  border-color: #1fc1de;
+  box-shadow: 0 0 0 3px rgba(31, 193, 222, 0.1);
+}
+
+/* Status-specific colors */
+.status-dropdown.status-provider-pending {
+  background: transparent;
+  border: none;
+  color: #92400e;
+}
+
+.status-dropdown.status-pending-payment {
+  background: transparent;
+  border: none;
+  color: #92400e;
+}
+
+.status-dropdown.status-paid {
+  background: transparent;
+  border: none;
+  color: #1e40af;
+}
+
+.status-dropdown.status-completed {
+  background: transparent;
+  border: none;
+  color: #065f46;
+}
+
+.status-dropdown.status-canceled {
+  background: transparent;
+  border: none;
+  color: #991b1b;
+}
+
+/* Cost Amount */
+.cost-amount {
+  font-weight: 700;
+  color: #059669;
+  font-size: 14px;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  display: inline;
+}
+
+/* Time Info */
+.time-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 40px;
+  justify-content: center;
+}
+
+.time-value {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.date-value {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 500;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+}
+
+/* Booking ID */
+.booking-id {
+  font-weight: 700;
+  color: #1fc1de;
+  background: #f0f9ff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.btn-action {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.btn-view {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.btn-view:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.btn-edit:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.btn-delete:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Loading State */
+.loading-row {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.loading-row .loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #1fc1de;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px;
+}
+
+.loading-row p {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* No Data */
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: #64748b;
+}
+
+.no-data p {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .trips-table th,
+  .trips-table td {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+  
+  .status-dropdown {
+    min-width: 120px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .trips-table-container {
+    overflow-x: auto;
+  }
+  
+  .trips-table {
+    min-width: 800px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .btn-action {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+} 

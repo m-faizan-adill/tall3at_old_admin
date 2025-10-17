@@ -1,0 +1,720 @@
+/* Trip Form Styles */
+.trip-form {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  margin: 20px;
+}
+
+.trip-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  background: #ffffff;
+  color: #000000;
+  border-bottom: 1px solid #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.trip-form-btn-back {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  color: #495057;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.trip-form-btn-back:hover {
+  background: #e9ecef;
+  color: #212529;
+  transform: translateX(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.trip-form-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #212529;
+}
+
+.trip-form-content {
+  padding: 32px;
+}
+
+.trip-form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.trip-form-section {
+  margin-bottom: 32px;
+  padding: 24px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.trip-form-section h3 {
+  margin: 0 0 20px 0;
+  color: #212529;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trip-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.trip-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trip-form-group label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 14px;
+}
+
+.trip-form-group input,
+.trip-form-group textarea,
+.trip-form-group select {
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.trip-form-group input:focus,
+.trip-form-group textarea:focus,
+.trip-form-group select:focus {
+  outline: none;
+  border-color: #1fc1de;
+  box-shadow: 0 0 0 3px rgba(31, 193, 222, 0.1);
+}
+
+.trip-form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Price Input Group */
+.price-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.price-input-group input {
+  padding-right: 60px;
+}
+
+.price-currency {
+  position: absolute;
+  right: 16px;
+  color: #6c757d;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+/* City and Category Search */
+.city-search-container,
+.category-search-container {
+  position: relative;
+}
+
+.city-search-input,
+.category-search-input {
+  position: relative;
+}
+
+.city-search-input input,
+.category-search-input input {
+  width: 100%;
+  padding: 12px 40px 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.city-search-input input:focus,
+.category-search-input input:focus {
+  outline: none;
+  border-color: #1fc1de;
+  box-shadow: 0 0 0 3px rgba(31, 193, 222, 0.1);
+}
+
+.city-clear-btn,
+.category-clear-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.city-clear-btn:hover,
+.category-clear-btn:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.city-dropdown,
+.category-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e9ecef;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.city-option,
+.category-option {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.city-option:hover,
+.category-option:hover {
+  background: #f8f9fa;
+}
+
+.city-option.selected,
+.category-option.selected {
+  background: #1fc1de;
+  color: white;
+}
+
+.city-no-results,
+.category-no-results {
+  padding: 12px 16px;
+  color: #6c757d;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Images Upload */
+.trip-images-upload {
+  position: relative;
+}
+
+.trip-images-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.trip-image-preview-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.trip-preview-image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.trip-remove-image-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.trip-remove-image-btn:hover {
+  background: #dc3545;
+  transform: scale(1.1);
+}
+
+.trip-upload-placeholder {
+  border: 2px dashed #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.trip-upload-placeholder:hover {
+  border-color: #1fc1de;
+  color: #1fc1de;
+  background-color: rgba(31, 193, 222, 0.05);
+  transform: translateY(-1px);
+}
+
+.trip-upload-placeholder:active {
+  transform: translateY(0);
+  background-color: rgba(31, 193, 222, 0.1);
+}
+
+.trip-upload-placeholder svg {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.trip-upload-placeholder p {
+  margin: 0 0 4px 0;
+  font-weight: 500;
+}
+
+.trip-upload-placeholder span {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.trip-file-input {
+  display: none;
+}
+
+/* Service Options */
+.trip-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trip-option-item {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.trip-option-item:hover {
+  border-color: #1fc1de;
+  box-shadow: 0 4px 12px rgba(31, 193, 222, 0.1);
+}
+
+.trip-option-grid {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1fr auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.trip-remove-option-btn {
+  background: #fee2e2;
+  color: #dc3545;
+  border: none;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.trip-remove-option-btn:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.trip-add-option-btn {
+  background: #e3f2fd;
+  color: #1976d2;
+  border: 2px dashed #1976d2;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-top: 16px;
+}
+
+.trip-add-option-btn:hover {
+  background: #1976d2;
+  color: white;
+  border-color: #1976d2;
+}
+
+/* Checkbox */
+.trip-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #495057;
+}
+
+.trip-checkbox-label input[type="checkbox"] {
+  display: none;
+}
+
+.trip-checkmark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e9ecef;
+  border-radius: 4px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.trip-checkbox-label input[type="checkbox"]:checked + .trip-checkmark {
+  background: #1fc1de;
+  border-color: #1fc1de;
+}
+
+.trip-checkbox-label input[type="checkbox"]:checked + .trip-checkmark::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Form Actions */
+.trip-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 2px solid #f8f9fa;
+  margin-top: 32px;
+}
+
+.trip-form-btn-cancel,
+.trip-form-btn-submit {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.trip-form-btn-cancel {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 2px solid #e9ecef;
+}
+
+.trip-form-btn-cancel:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.trip-form-btn-submit {
+  background: linear-gradient(135deg, #1fc1de 0%, #001062 100%);
+  color: white;
+}
+
+.trip-form-btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(31, 193, 222, 0.3);
+}
+
+.trip-form-btn-submit:disabled,
+.trip-form-btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Error Message */
+.trip-form-error-message {
+  background: #ffebee;
+  color: #c62828;
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 1px solid #ffcdd2;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .trip-form-header {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .trip-form-content {
+    padding: 20px;
+  }
+
+  .trip-form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .trip-option-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .trip-images-preview {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .trip-form-actions {
+    flex-direction: column;
+  }
+
+  .trip-form-btn-cancel,
+  .trip-form-btn-submit {
+    width: 100%;
+    justify-content: center;
+  }
+} 
+
+/* Trip Packages Styles */
+.trip-packages {
+  margin-top: 20px;
+}
+
+.trip-package-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.trip-package-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.trip-package-item .trip-form-group {
+  margin-bottom: 0;
+}
+
+.trip-package-item .trip-form-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.trip-package-item .trip-form-group input,
+.trip-package-item .trip-form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.trip-package-item .trip-form-group input:focus,
+.trip-package-item .trip-form-group textarea:focus {
+  outline: none;
+  border-color: #1fc1de;
+  box-shadow: 0 0 0 3px rgba(31, 193, 222, 0.1);
+}
+
+.trip-package-item .trip-form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.trip-remove-package-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.75rem;
+}
+
+.trip-remove-package-btn:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}
+
+.trip-add-package-btn {
+  background: linear-gradient(135deg, #1fc1de, #00a6c9);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  box-shadow: 0 4px 12px rgba(31, 193, 222, 0.2);
+}
+
+.trip-add-package-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(31, 193, 222, 0.3);
+}
+
+.trip-add-package-btn:active {
+  transform: translateY(0);
+}
+
+.trip-add-package-btn svg {
+  font-size: 0.75rem;
+}
+
+/* Checkbox styling for featured packages */
+.trip-package-item .trip-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #374151;
+  margin-top: 8px;
+}
+
+.trip-package-item .trip-checkbox-label input[type="checkbox"] {
+  display: none;
+}
+
+.trip-package-item .trip-checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  position: relative;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.trip-package-item .trip-checkbox-label input[type="checkbox"]:checked + .trip-checkmark {
+  background: #1fc1de;
+  border-color: #1fc1de;
+}
+
+.trip-package-item .trip-checkbox-label input[type="checkbox"]:checked + .trip-checkmark::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+/* Responsive design for packages */
+@media (max-width: 768px) {
+  .trip-package-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .trip-package-item {
+    padding: 16px;
+  }
+  
+  .trip-remove-package-btn {
+    top: 8px;
+    left: 8px;
+    width: 28px;
+    height: 28px;
+  }
+  
+  .trip-add-package-btn {
+    padding: 10px 20px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .trip-package-item {
+    padding: 12px;
+  }
+  
+  .trip-package-grid {
+    gap: 10px;
+  }
+  
+  .trip-package-item .trip-form-group input,
+  .trip-package-item .trip-form-group textarea {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+} 
