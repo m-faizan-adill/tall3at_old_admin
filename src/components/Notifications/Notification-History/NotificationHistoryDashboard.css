@@ -1,0 +1,192 @@
+.notif-history-wrap {
+    padding: 20px;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.notif-history-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--accent);
+    margin-bottom: 15px;
+}
+
+.notif-history-header h1 {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.notif-history-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.notif-history-tabs button {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    cursor: pointer;
+    color: var(--muted);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.notif-history-tabs button.active {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    border-color: var(--accent);
+}
+
+.notif-history-controls {
+    margin: 10px 0 15px;
+}
+
+.notif-history-controls .search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 6px 10px;
+    border-radius: 6px;
+    width: 320px;
+}
+
+.notif-history-controls input {
+    border: none;
+    outline: none;
+    flex: 1;
+    background: transparent;
+    color: var(--text);
+}
+
+.notif-history-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    box-shadow: var(--shadow);
+}
+
+.notif-history-table th,
+.notif-history-table td {
+    border: 1px solid var(--border);
+    padding: 10px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.notif-history-table th {
+    background: var(--bg);
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.title{
+    cursor: pointer;
+}
+
+.body-preview {
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.status-sent {
+    color: green;
+    font-weight: 600;
+}
+
+.status-failed {
+    color: red;
+    font-weight: 600;
+}
+
+.empty {
+    margin: 20px 0;
+    text-align: center;
+    color: var(--muted);
+}
+
+.notif-history-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 15px;
+    gap: 10px;
+}
+
+.notif-history-pagination button {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.notif-history-pagination button:hover:not(:disabled) {
+    background: var(--accent);
+    color: #fff;
+}
+
+.notif-history-pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.actions button {
+    margin-right: 5px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.edit-btn {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.delete-btn {
+    background: #fbe9e9;
+    color: red;
+    border-color: #f5c2c2;
+}
+
+.save-btn {
+    background: #d1f7d6;
+    color: green;
+    border-color: #8ad48e;
+}
+
+.cancel-btn {
+    background: #eee;
+    color: var(--muted);
+}
+
+.notif-history-table td input,
+.notif-history-table td textarea {
+  width: 100%;
+  max-width: 400px; /* optional: you can increase if needed */
+  box-sizing: border-box;
+}
+
+
+@media (max-width: 768px) {
+ 
+ .notif-history-tabs{
+    display: grid;
+ }
+.notif-history-controls .search{
+    width: 280px;
+}
+
+}

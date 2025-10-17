@@ -1,0 +1,68 @@
+/* ✨ Sidebar Link Text Animation */
+.sidebar-links li a,
+.sidebar-links li button.logout-link {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+.sidebar-links li a span,
+.sidebar-links li button.logout-link span {
+  display: inline-block;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+/* 🟦 Hover: smooth slide & glow */
+.sidebar-links li a:hover span,
+.sidebar-links li button.logout-link:hover span {
+  transform: translateX(-6px); /* little move to the left */
+  color: var(--primary-color);
+}
+
+.sidebar-links li a:hover::after,
+.sidebar-links li button.logout-link:hover::after {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* 🌟 optional underline shine */
+.sidebar-links li a::after,
+.sidebar-links li button.logout-link::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 10px;
+  width: 0%;
+  height: 2px;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+  opacity: 0.7;
+}
+
+.sidebar-links li a:hover::after,
+.sidebar-links li button.logout-link:hover::after {
+  width: 80%;
+}
+
+/* 🌈 Subtle icon pulse animation */
+@keyframes sidebarIconPulse {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.sidebar-links li a .fa,
+.sidebar-links li button.logout-link .fa {
+  animation: sidebarIconPulse 3.5s ease-in-out infinite;
+  transition: color 0.5s ease;
+}
+
+/* stop bouncing when hovered */
+.sidebar-links li a:hover .fa,
+.sidebar-links li button.logout-link:hover .fa {
+  animation: none;
+  color: var(--primary-color);
+}

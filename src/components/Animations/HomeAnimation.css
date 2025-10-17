@@ -1,0 +1,141 @@
+/* 🌟 Stylish Dashboard Card Animations - PRO LOOK */
+
+/* Floating animation (auto gentle movement) */
+@keyframes floaty {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+  100% { transform: translateY(0px); }
+}
+
+/* Light sweep shimmer */
+@keyframes shine {
+  0% { transform: translateX(-100%) skewX(-15deg); opacity: 0; }
+  50% { opacity: 0.4; }
+  100% { transform: translateX(150%) skewX(-15deg); opacity: 0; }
+}
+
+/* Initial entrance animation */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Main Card Styling */
+.dashboard-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 3px 10px rgba(31, 193, 222, 0.08);
+  display: flex;
+  align-items: center;
+  padding: 18px;
+  gap: 16px;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border-top: 3px solid #1fc1de;
+  transition: all 0.4s ease;
+  animation: fadeUp 0.8s ease forwards, floaty 5s ease-in-out infinite;
+}
+
+/* Subtle delay for nice cascade */
+.dashboard-card:nth-child(1) { animation-delay: 0.1s; }
+.dashboard-card:nth-child(2) { animation-delay: 0.2s; }
+.dashboard-card:nth-child(3) { animation-delay: 0.3s; }
+.dashboard-card:nth-child(4) { animation-delay: 0.4s; }
+.dashboard-card:nth-child(5) { animation-delay: 0.5s; }
+.dashboard-card:nth-child(6) { animation-delay: 0.6s; }
+.dashboard-card:nth-child(7) { animation-delay: 0.7s; }
+.dashboard-card:nth-child(8) { animation-delay: 0.8s; }
+
+/* Add a glossy sweep on hover */
+.dashboard-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-15deg);
+  opacity: 0;
+}
+
+/* Hover magic */
+.dashboard-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 8px 30px rgba(31, 193, 222, 0.2);
+}
+
+.dashboard-card:hover::before {
+  animation: shine 1.2s ease forwards;
+}
+
+/* Icon pop effect */
+.card-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.7rem;
+  transition: all 0.4s ease;
+  box-shadow: 0 3px 10px rgba(31, 193, 222, 0.15);
+}
+
+.dashboard-card:hover .card-icon {
+  transform: rotate(15deg) scale(1.15);
+  box-shadow: 0 4px 18px rgba(31, 193, 222, 0.35);
+}
+
+/* Info smooth movement */
+.card-info {
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover .card-info {
+  transform: translateX(-5px);
+}
+
+/* Text color animation */
+.card-label, .card-value {
+  transition: color 0.3s ease;
+}
+
+.dashboard-card:hover .card-label {
+  color: #00bcd4;
+}
+
+.dashboard-card:hover .card-value {
+  color: #111;
+}
+
+/* Glow line animation below card */
+.dashboard-card::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #1fc1de, transparent);
+  transition: all 0.4s ease;
+  transform: translateX(-50%);
+}
+
+.dashboard-card:hover::after {
+  width: 80%;
+}
+
+/* Responsive tweak */
+@media (max-width: 700px) {
+  .dashboard-card {
+    animation: fadeUp 0.8s ease forwards;
+  }
+}

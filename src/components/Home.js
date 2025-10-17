@@ -2,14 +2,19 @@ import React, { useEffect, useState } from 'react';
 import ApexChart from 'react-apexcharts';
 import axios from 'axios';
 import './Home.css';
+import { API_CONFIG } from '../constants/config';
+import { useNavigate } from 'react-router-dom';
+import '../components/Animations/HomeAnimation.css'
 
 export default function Home() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
+  // console.log('Home component rendered', data);
   useEffect(() => {
-    axios.get('http://localhost:5030/api/admin/dashboard')
+    axios.get(`${API_CONFIG.BASE_URL}/api/admin/dashboard`)
       .then(res => {
         setData(res.data);
         setLoading(false);
@@ -28,7 +33,7 @@ export default function Home() {
       </div>
     );
   }
-  
+
   if (error) return <div className="dashboard-error">{error}</div>;
   if (!data) return null;
 
@@ -37,41 +42,111 @@ export default function Home() {
   // Card data
   const statCards = [
     {
-      label: 'المستخدمون',
-      value: statistics.users.total,
+      label: 'إجمالي المستخدمين',
+      value: statistics.users.total - 1,//1 is admin
       icon: 'fa-users',
       color: '#1fc1de',
-      sub: `جديد هذا الشهر: ${statistics.users.newThisMonth}`
+      sub: `جديد هذا الشهر: ${statistics.users.newThisMonth}`,
+      // to: '/admin/customers'
     },
     {
       label: 'مزودي الخدمات',
       value: statistics.users.providers,
       icon: 'fa-briefcase',
       color: '#00a6c9',
-      sub: `العملاء: ${statistics.users.customers}`
+      sub: `العملاء: ${statistics.users.providers}`,
+      to: '/admin/providers'
     },
     {
-      label: 'الطلعات',
+      label: 'عميل',
+      value: statistics.users.customers,
+      icon: 'fa-briefcase',
+      color: '#00a6c9',
+      sub: `العملاء: ${statistics.users.customers}`,
+      to: '/admin/customers'
+    },
+    {
+      label: 'إجمالي الطلعات',
       value: statistics.trips.total,
       icon: 'fa-route',
       color: '#1fc1de',
-      sub: `مميزة: ${statistics.trips.featured}`
+      sub: `مميزة: ${statistics.trips.featured}`,
+      to: '/admin/trips'
     },
     {
-      label: 'الحجوزات',
+      label: 'الطلعات النشطة',
+      value: statistics.trips.active,
+      icon: 'fa-route',
+      color: '#1fc1de',
+      sub: `مميزة: ${statistics.trips.featured}`,
+      to: '/admin/trips'
+    },
+    {
+      label: 'إجمالي الحجوزات',
       value: statistics.bookings.total,
       icon: 'fa-calendar-check',
       color: '#00a6c9',
-      sub: `هذا الشهر: ${statistics.bookings.thisMonth}`
+      sub: `هذا الشهر: ${statistics.bookings.thisMonth}`,
+      to: '/admin/bookings'
     },
+    {
+      label: 'الحجوزات المدفوعة',
+      value: statistics.bookings.paid,
+      icon: 'fa-calendar-check',
+      color: '#00a6c9',
+      sub: `هذا الشهر: ${statistics.bookings.thisMonth}`,
+      to: '/admin/bookings'
+    },
+
     {
       label: 'الإيرادات',
       value: statistics.revenue.total,
       icon: 'fa-coins',
       color: '#1fc1de',
-      sub: `عمولة التطبيق: ${statistics.revenue.totalAppCommission}`
+      sub: `عمولة التطبيق: ${statistics.revenue.totalAppCommission}`,
+      to: '/admin/revenue'
+    },
+    {
+      label: 'مزودي الخدمات (مع المدينة)',
+      value: statistics.users.providersWithCity,
+      icon: 'fa-city',
+      color: '#1fc1de',
+      sub: `عدد المزودين المسجلين مع المدينة`,
+      to: '/admin/providers'
+    },
+    {
+      label: 'مزودي الخدمات (بدون مدينة)',
+      value: statistics.users.providersWithoutCity,
+      icon: 'fa-city',
+      color: '#e67e22',
+      sub: `مزودين لم يضيفوا المدينة`,
+      to: '/admin/providers'
+    },
+    {
+      label: 'العملاء (مع المدينة)',
+      value: statistics.users.customersWithCity,
+      icon: 'fa-users',
+      color: '#00a65a',
+      sub: `عملاء لديهم مدينة`,
+      to: '/admin/customers'
+    },
+    {
+      label: 'العملاء (بدون مدينة)',
+      value: statistics.users.customersWithoutCity,
+      icon: 'fa-users',
+      color: '#f39c12',
+      sub: `عملاء لم يضيفوا المدينة`,
+      to: '/admin/customers'
     }
+
   ];
+
+  const onCardKeyDown = (e, to) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      navigate(to);
+    }
+  };
 
   // Chart configs
   const revenueChart = {
@@ -101,11 +176,16 @@ export default function Home() {
     series: [{ name: 'مستخدمون جدد', data: chartData.dailyUsers.map(d => d.value) }]
   };
 
-    return (
+  return (
     <div className="dashboard-home">
       <div className="dashboard-cards">
         {statCards.map((card, i) => (
-          <div className="dashboard-card" key={i} style={{ borderTop: `3px solid ${card.color}` }}>
+          <div className="dashboard-card"
+            key={i}
+            style={{ borderTop: `3px solid ${card.color}` }}
+            onClick={() => navigate(card.to)}                                      // 👈 navigate
+            onKeyDown={(e) => onCardKeyDown(e, card.to)}
+          >
             <div className="card-icon" style={{ background: card.color }}><span className={`fa ${card.icon}`}></span></div>
             <div className="card-info">
               <div className="card-label">{card.label}</div>

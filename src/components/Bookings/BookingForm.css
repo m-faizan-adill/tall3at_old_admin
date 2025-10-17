@@ -694,3 +694,31 @@
 .customer-dropdown::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 } 
+
+.booking-form-select {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid #ddd;
+  border-radius: 7px;
+  background-color: #fff;
+  font-size: 16px;
+  color: #333;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='24' width='24' viewBox='0 0 24 24'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  margin-bottom: 1.2rem;
+}
+
+.booking-form-select:hover {
+  border-color: #aaa;
+}
+
+.booking-form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+}

@@ -109,6 +109,7 @@
   color: white;
   box-shadow: 0 6px 20px rgba(31, 193, 222, 0.4);
   border: 2px solid transparent;
+  padding: unset;
 }
 
 .btn-edit:hover {
@@ -157,7 +158,7 @@
 }
 
 .trip-details-content {
-  display: grid;
+  display: inline-table;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   align-items: start;
@@ -209,6 +210,7 @@
   padding: 32px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #e2e8f0;
+    margin-top: 2rem;
 }
 
 .trip-details-packages {
@@ -218,6 +220,7 @@
   padding: 32px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #e2e8f0;
+  margin-top: 2rem;
 }
 
 .trip-details-comments {
@@ -227,6 +230,7 @@
   padding: 32px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #e2e8f0;
+  margin-top: 2rem;
 }
 
 /* Responsive design for the staggered layout */
@@ -298,6 +302,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+  align-items: center;
 }
 
 .trip-details-location,
@@ -330,7 +335,7 @@
 
 .trip-details-price {
   text-align: center;
-  padding: 28px;
+  padding: 10px;
   background: linear-gradient(135deg, #1fc1de, #00a6c9);
   border-radius: 20px;
   color: white;
@@ -346,7 +351,7 @@
 }
 
 .price-amount {
-  font-size: 2.2rem;
+  font-size: 1.5rem;
   font-weight: 900;
   color: white;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -491,7 +496,7 @@
 .main-image {
   width: 100%;
   height: 400px;
-  object-fit: cover;
+  /* object-fit: cover; */
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -794,16 +799,16 @@
 }
 
 /* Provider Information */
-.provider-info {
+/* .provider-info {
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 24px;
+  padding: 3px;
   background: linear-gradient(135deg, #f8fafc, #f1f5f9);
   border-radius: 16px;
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
-}
+} */
 
 .provider-info:hover {
   background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
@@ -1035,6 +1040,7 @@
 
 .comments-list {
   display: flex;
+  /* margin-top: 12px; */
   flex-direction: column;
   gap: 20px;
 }
@@ -1045,6 +1051,7 @@
   border-radius: 16px;
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
+  /* margin-top: 1rem; */
 }
 
 .comment-card:hover {
@@ -1204,7 +1211,8 @@
 @media (max-width: 1024px) {
   .trip-details-header-section {
     grid-template-columns: 1fr;
-    gap: 24px;
+    /* gap: 24px; */
+    gap: revert-layer;
   }
 
   .trip-details-grid {
@@ -1249,7 +1257,7 @@
   .btn-action {
     width: 100%;
     justify-content: center;
-    padding: 14px 16px;
+    padding: unset
   }
 
   .trip-details-meta {

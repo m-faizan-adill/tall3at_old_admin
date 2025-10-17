@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faArrowLeft, 
-  faSave, 
+import {
+  faArrowLeft,
+  faSave,
   faUpload,
   faTimes,
   faUser,
@@ -25,8 +25,15 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
     confirmPassword: '',
     cityId: '',
     profileImageFile: null,
-    profileImage: null
+    profileImage: null,
+    balance: 0,
+    accountName: '',
+    bankName: '',
+    IbanNumber: '',
+    status: 'Active' // Active, Inactive, Suspended
   });
+
+  console.log('Form Data State:', formData);
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -38,6 +45,7 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
     isVisible: false,
     message: ''
   });
+  const [imagePreview, setImagePreview] = useState(''); // For image preview
 
   useEffect(() => {
     fetchCities();
@@ -84,16 +92,17 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
   const getImageUrl = (imagePath) => {
     if (!imagePath) return '/assets/images/default-avatar.png';
     if (imagePath.startsWith('http')) return imagePath;
-    return `${API_CONFIG.BASE_URL}/images/profiles/${imagePath}`;
+    return `${API_CONFIG.BASE_URL}${imagePath}`;
   };
-  
+
 
   const fetchProvider = async () => {
     try {
       setLoading(true);
       const response = await api.get(`/api/admin/providers/${providerId}`);
       const provider = response.data;
-      
+      console.log('Fetched provider data:', provider);
+      console.log('fetch provider image: ', getImageUrl(provider.profileImage));
       setFormData({
         fullName: provider.fullName || '',
         userName: provider.userName || '',
@@ -102,8 +111,15 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
         confirmPassword: '',
         cityId: provider.cityId?.toString() || '',
         profileImageFile: null,
-        profileImage: getImageUrl(provider.profileImage) || null
+        profileImage: provider.profileImage || null,
+        balance: provider.balance || 0,
+        bankName: provider.bankName || '',
+        accountName: provider.accountName || '',
+        IbanNumber: provider.ibanNumber || '',
+        status: provider.status || 'Active'
       });
+
+      setImagePreview(getImageUrl(provider.profileImage)); // for preview
 
       // Set city search text if city is selected and cities are already loaded
       if (provider.cityId && cities.length > 0) {
@@ -123,7 +139,7 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -134,7 +150,7 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
     const file = e.target.files[0];
     if (file) {
       setFormData(prev => ({ ...prev, [field]: file }));
-      
+
       // Clear error for this field
       if (errors[field]) {
         setErrors(prev => ({ ...prev, [field]: '' }));
@@ -150,7 +166,7 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
   };
 
   // Filter cities based on search
-  const filteredCities = cities.filter(city => 
+  const filteredCities = cities.filter(city =>
     city.name.toLowerCase().includes(citySearch.toLowerCase())
   );
 
@@ -158,7 +174,7 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
     setFormData(prev => ({ ...prev, cityId: cityId }));
     setCitySearch(cityName);
     setShowCityDropdown(false);
-    
+
     // Clear error for city field
     if (errors.cityId) {
       setErrors(prev => ({ ...prev, cityId: '' }));
@@ -171,11 +187,6 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
     if (!e.target.value) {
       setFormData(prev => ({ ...prev, cityId: '' }));
     }
-  };
-
-  const getSelectedCityName = () => {
-    const selectedCity = cities.find(city => city.id.toString() === formData.cityId);
-    return selectedCity ? selectedCity.name : '';
   };
 
   const showSuccessMessage = (message) => {
@@ -219,7 +230,7 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -229,13 +240,15 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
       setError(null);
 
       const formDataToSend = new FormData();
-      
+
       // Add form fields
       Object.keys(formData).forEach(key => {
         if (key === 'profileImageFile') {
           // Handle profile image separately
           if (formData[key] instanceof File) {
-            formDataToSend.append(key, formData[key]);
+            // formDataToSend.append(key, formData[key]);
+            formDataToSend.append('profileImageFile', formData[key]);
+
           }
         } else if (formData[key] !== null && formData[key] !== '') {
           formDataToSend.append(key, formData[key]);
@@ -262,7 +275,7 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
     } catch (err) {
       // Handle different error response formats
       let errorMessage = 'فشل في حفظ البيانات';
-      
+
       if (err.response?.data) {
         if (typeof err.response.data === 'string') {
           errorMessage = err.response.data;
@@ -297,7 +310,7 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
       } else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
       console.error('Error saving provider:', err);
     } finally {
@@ -321,12 +334,14 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
 
       {error && <div className="error-message">{error}</div>}
 
+
+      {/* provider form */}
       <form onSubmit={handleSubmit} className="provider-form-content">
         <div className="form-grid">
           {/* Basic Information */}
           <div className="form-section">
             <h3>المعلومات الأساسية</h3>
-            
+
             <div className="form-group">
               <label htmlFor="fullName">
                 <FontAwesomeIcon icon={faUser} />
@@ -382,7 +397,7 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
           {/* Account Information */}
           <div className="form-section">
             <h3>معلومات الحساب</h3>
-            
+
             <div className="form-group">
               <label htmlFor="cityId">
                 <FontAwesomeIcon icon={faMapMarkerAlt} />
@@ -398,7 +413,7 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
                     onFocus={() => setShowCityDropdown(true)}
                     className={errors.cityId ? 'error' : ''}
                   />
-                  <button 
+                  <button
                     type="button"
                     className="form-city-clear-btn"
                     onClick={() => {
@@ -411,7 +426,7 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
                     ×
                   </button>
                 </div>
-                
+
                 {showCityDropdown && (
                   <div className="form-city-dropdown">
                     {filteredCities.length > 0 ? (
@@ -449,16 +464,21 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
               </div>
               {(formData.profileImageFile || formData.profileImage) && (
                 <div className="file-preview">
-                  <img 
-                    src={formData.profileImageFile instanceof File ? 
-                      URL.createObjectURL(formData.profileImageFile) : 
-                      (formData.profileImage || formData.profileImageFile)
-                    } 
-                    alt="Profile preview" 
+                  <img
+                
+                    src={formData.profileImageFile instanceof File
+                      ? URL.createObjectURL(formData.profileImageFile)
+                      : imagePreview}
+                    alt="Profile preview"
                   />
-                  <button 
-                    type="button" 
-                    onClick={() => removeFile('profileImageFile')}
+                  <button
+                    type="button"
+                    // onClick={() => removeFile('profileImageFile')}
+                    onClick={() => {
+                      removeFile('profileImageFile');
+                      setImagePreview('');
+                      setFormData(prev => ({ ...prev, profileImage: null }));
+                    }}
                     className="remove-file"
                   >
                     <FontAwesomeIcon icon={faTimes} />
@@ -466,6 +486,64 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
                 </div>
               )}
             </div>
+
+            <div className="form-group">
+              <label>الرصيد (Balance)</label>
+              <input
+                type="number"
+                name="balance"
+                value={formData.balance ?? ''}
+                onChange={handleInputChange}
+                min="0"
+                step="0.01"
+                placeholder="أدخل الرصيد"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>اسم البنك (Account Name)</label>
+              <input
+                type="text"
+                name="accountName"
+                value={formData.accountName}
+                onChange={handleInputChange}
+              />
+            </div>
+
+
+            <div className="form-group">
+              <label>اسم البنك (Bank Name)</label>
+              <input
+                type="text"
+                name="bankName"
+                value={formData.bankName}
+                onChange={handleInputChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>اسم البنك (Iban Number)</label>
+              <input
+                type="text"
+                name="IbanNumber"
+                value={formData.IbanNumber}
+                onChange={handleInputChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>الحالة (Status)</label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleInputChange}
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Suspended">Suspended</option>
+              </select>
+            </div>
+
           </div>
         </div>
 
@@ -480,7 +558,7 @@ const ProviderForm = ({ providerId, onBack, onSuccess }) => {
         </div>
       </form>
 
-      <SuccessModal 
+      <SuccessModal
         message={successModal.message}
         isVisible={successModal.isVisible}
         onClose={closeSuccessModal}

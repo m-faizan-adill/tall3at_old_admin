@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faArrowRight, 
-  faEdit, 
-  faUser, 
-  faPhone, 
-  faEnvelope, 
-  faMapMarkerAlt, 
+import {
+  faArrowRight,
+  faEdit,
+  faUser,
+  faPhone,
+  faEnvelope,
+  faMapMarkerAlt,
   faCalendarAlt,
   faShoppingCart,
   faCheckCircle,
@@ -14,33 +14,67 @@ import {
   faTimesCircle,
   faStar,
   faMoneyBillWave,
-  faRoute
+  faRoute,
+  faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
 import api from '../../services/api';
 import { API_CONFIG } from '../../constants/config';
 import { formatDate } from '../../utils/dateUtils';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import './CustomerDetails.css';
 
 // Utility function to get full image URL
 const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
   if (imagePath.startsWith('http')) return imagePath;
-  return `${API_CONFIG.BASE_URL}${imagePath}`;
+  return `${API_CONFIG.BASE_URL}/${imagePath}`;
 };
 
 const CustomerDetails = ({ customerId, onBack, onEdit, onViewBooking, onViewTrip }) => {
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
+  const { id: routeId } = useParams();
+  const origin = location.state?.origin || null;
+  const from = location.state?.from || '/admin/chats';
+  const convoId = location.state?.convoId || sessionStorage.getItem('lastConvoId');;
+
+  // dynamic back text
+  const backText = origin === 'chats'
+    ? 'العوده الى المحادثه'
+    : 'العوده الى قائمة العملاء';
+
+  function handleBack() {
+    // always go to chat (or 'from') with the convo id in state
+    navigate(from, {
+      replace: true,
+      state: convoId ? { openConversationId: String(convoId) } : undefined,
+    });
+  }
+
+  // ✅ merge both into ONE id (prop > route), string-safe
+  const effectiveCustomerId = String(customerId ?? routeId ?? '').trim();
+  console.log('CustomerDetails -> propCustomerId:', customerId, 'routeId:', routeId, 'effective:', effectiveCustomerId);
+
+  // ✅ single effect: fetch using the merged id
   useEffect(() => {
-    fetchCustomer();
-  }, [customerId]);
+    if (!effectiveCustomerId) {
+      setError('لا يوجد معرّف عميل');
+      setLoading(false);
+      return;
+    }
+    fetchCustomer(effectiveCustomerId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveCustomerId]);
 
-  const fetchCustomer = async () => {
+
+  const fetchCustomer = async (id) => {
     try {
       setLoading(true);
-      const response = await api.get(`/api/admin/users/${customerId}`);
+      const response = await api.get(`/api/admin/users/${encodeURIComponent(id)}`);
       setCustomer(response.data);
     } catch (err) {
       setError('فشل في تحميل بيانات العميل');
@@ -52,34 +86,34 @@ const CustomerDetails = ({ customerId, onBack, onEdit, onViewBooking, onViewTrip
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'Active': { 
-        class: 'customers-status-active', 
+      'Active': {
+        class: 'customers-status-active',
         text: 'نشط',
         icon: faCheckCircle
       },
-      'Pending': { 
-        class: 'customers-status-pending', 
+      'Pending': {
+        class: 'customers-status-pending',
         text: 'في الانتظار',
         icon: faClock
       },
-      'Suspended': { 
-        class: 'customers-status-suspended', 
+      'Suspended': {
+        class: 'customers-status-suspended',
         text: 'معلق',
         icon: faTimesCircle
       },
-      'Deleted': { 
-        class: 'customers-status-deleted', 
+      'Deleted': {
+        class: 'customers-status-deleted',
         text: 'محذوف',
         icon: faTimesCircle
       }
     };
-    
-    const config = statusConfig[status] || { 
-      class: 'customers-status-default', 
+
+    const config = statusConfig[status] || {
+      class: 'customers-status-default',
       text: status,
       icon: faClock
     };
-    
+
     return (
       <span className={`customers-status-badge ${config.class}`}>
         <FontAwesomeIcon icon={config.icon} />
@@ -153,9 +187,10 @@ const CustomerDetails = ({ customerId, onBack, onEdit, onViewBooking, onViewTrip
     <div className="customers-details">
       <div className="customers-details-header">
         <div className="customers-header-left">
-          <button className="customers-btn-back" onClick={onBack}>
-            <FontAwesomeIcon icon={faArrowRight} />
-            العودة إلى قائمة العملاء
+        
+          <button className="btn-back" onClick={onBack ? onBack : handleBack}>
+            <FontAwesomeIcon icon={faArrowLeft} />
+            {backText}
           </button>
           <div className="customers-header-title">
             <h2>تفاصيل العميل</h2>
@@ -176,8 +211,8 @@ const CustomerDetails = ({ customerId, onBack, onEdit, onViewBooking, onViewTrip
           <div className="customers-profile-header">
             <div className="customers-profile-avatar">
               {getImageUrl(customer.profileImage) ? (
-                <img 
-                  src={getImageUrl(customer.profileImage)} 
+                <img
+                  src={getImageUrl(customer.profileImage)}
                   alt={customer.fullName}
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -300,8 +335,8 @@ const CustomerDetails = ({ customerId, onBack, onEdit, onViewBooking, onViewTrip
             <h4>الرحلات الأخيرة</h4>
             <div className="customers-trips-grid">
               {customer.recentTrips.map(trip => (
-                <div 
-                  key={trip.id} 
+                <div
+                  key={trip.id}
                   className={`customers-trip-card ${onViewTrip ? 'clickable' : ''}`}
                   onClick={() => onViewTrip && onViewTrip(trip.id)}
                 >
@@ -338,8 +373,8 @@ const CustomerDetails = ({ customerId, onBack, onEdit, onViewBooking, onViewTrip
           {customer.recentBookings && customer.recentBookings.length > 0 ? (
             <div className="customers-bookings-grid">
               {customer.recentBookings.map(booking => (
-                <div 
-                  key={booking.id} 
+                <div
+                  key={booking.id}
                   className={`customers-booking-card ${onViewBooking ? 'clickable' : ''}`}
                   onClick={() => onViewBooking && onViewBooking(booking.id)}
                 >

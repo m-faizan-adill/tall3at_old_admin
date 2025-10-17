@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faArrowRight, 
-  faUser, 
-  faPhone, 
-  faEnvelope, 
-  faMapMarkerAlt, 
-  faUpload, 
-  faTimes, 
-  faSave 
+import {
+  faArrowRight,
+  faUser,
+  faPhone,
+  faEnvelope,
+  faMapMarkerAlt,
+  faUpload,
+  faTimes,
+  faSave
 } from '@fortawesome/free-solid-svg-icons';
 import api from '../../services/api';
 import { API_CONFIG } from '../../constants/config';
@@ -25,6 +25,8 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
     profileImageFile: null,
     profileImage: null
   });
+
+  console.log('CustomerForm formData:', formData);
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -82,7 +84,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
   const getImageUrl = (imagePath) => {
     if (!imagePath) return '/assets/images/default-avatar.png';
     if (imagePath.startsWith('http')) return imagePath;
-    return `${API_CONFIG.BASE_URL}${imagePath}`;
+    return `${API_CONFIG.BASE_URL}/${imagePath}`;
   };
 
   const fetchCustomer = async () => {
@@ -90,7 +92,9 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
       setLoading(true);
       const response = await api.get(`/api/admin/users/${customerId}`);
       const customer = response.data;
-      
+      // console.log('Fetched customer:', customer.profileImage);
+      // console.log('fetch customer image: ', getImageUrl(customer.profileImage));
+
       setFormData({
         fullName: customer.fullName || '',
         userName: customer.userName || '',
@@ -118,7 +122,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -129,7 +133,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
     const file = e.target.files[0];
     if (file) {
       setFormData(prev => ({ ...prev, [field]: file }));
-      
+
       // Clear error for this field
       if (errors[field]) {
         setErrors(prev => ({ ...prev, [field]: '' }));
@@ -145,7 +149,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
   };
 
   // Filter cities based on search
-  const filteredCities = cities.filter(city => 
+  const filteredCities = cities.filter(city =>
     city.name.toLowerCase().includes(citySearch.toLowerCase())
   );
 
@@ -153,7 +157,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
     setFormData(prev => ({ ...prev, cityId: cityId }));
     setCitySearch(cityName);
     setShowCityDropdown(false);
-    
+
     // Clear error for city field
     if (errors.cityId) {
       setErrors(prev => ({ ...prev, cityId: '' }));
@@ -214,7 +218,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -224,7 +228,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
       setError(null);
 
       const formDataToSend = new FormData();
-      
+
       // Add form fields
       Object.keys(formData).forEach(key => {
         if (key === 'profileImageFile') {
@@ -257,7 +261,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
     } catch (err) {
       // Handle different error response formats
       let errorMessage = 'فشل في حفظ البيانات';
-      
+
       if (err.response?.data) {
         if (typeof err.response.data === 'string') {
           errorMessage = err.response.data;
@@ -292,7 +296,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
       } else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
       console.error('Error saving customer:', err);
     } finally {
@@ -321,7 +325,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
           {/* Basic Information */}
           <div className="form-section">
             <h3>المعلومات الأساسية</h3>
-            
+
             <div className="form-group">
               <label htmlFor="fullName">
                 <FontAwesomeIcon icon={faUser} />
@@ -377,7 +381,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
           {/* Account Information */}
           <div className="form-section">
             <h3>معلومات الحساب</h3>
-            
+
             <div className="form-group">
               <label htmlFor="cityId">
                 <FontAwesomeIcon icon={faMapMarkerAlt} />
@@ -393,7 +397,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
                     onFocus={() => setShowCityDropdown(true)}
                     className={errors.cityId ? 'error' : ''}
                   />
-                  <button 
+                  <button
                     type="button"
                     className="form-city-clear-btn"
                     onClick={() => {
@@ -406,7 +410,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
                     ×
                   </button>
                 </div>
-                
+
                 {showCityDropdown && (
                   <div className="form-city-dropdown">
                     {filteredCities.length > 0 ? (
@@ -438,21 +442,21 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
                   id="profileImageFile"
                   className="hidden-input"
                 />
-                
+
                 {(formData.profileImageFile || formData.profileImage) ? (
                   <div className="image-preview-container">
                     <div className="image-preview">
-                      <img 
-                        src={formData.profileImageFile instanceof File ? 
-                          URL.createObjectURL(formData.profileImageFile) : 
+                      <img
+                        src={formData.profileImageFile instanceof File ?
+                          URL.createObjectURL(formData.profileImageFile) :
                           (formData.profileImage || formData.profileImageFile)
-                        } 
-                        alt="Profile preview" 
+                        }
+                        alt="Profile preview"
                         className="preview-image"
                       />
                       <div className="image-overlay">
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           onClick={() => removeFile('profileImageFile')}
                           className="remove-image-btn"
                           title="إزالة الصورة"
@@ -494,7 +498,7 @@ const CustomerForm = ({ customerId, onBack, onSuccess }) => {
         </div>
       </form>
 
-      <SuccessModal 
+      <SuccessModal
         message={successModal.message}
         isVisible={successModal.isVisible}
         onClose={closeSuccessModal}

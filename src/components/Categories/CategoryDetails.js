@@ -255,10 +255,10 @@ const CategoryDetails = ({ categoryId, onBack, onEdit }) => {
                           <FontAwesomeIcon icon={faUser} />
                           {trip.providerName}
                         </span>
-                        <span className="price">
+                        {/* <span className="price">
                           <FontAwesomeIcon icon={faMoneyBillWave} />
                           {trip.price} ريال
-                        </span>
+                        </span> */}
                       </p>
                     </div>
                     <div className="category-item-status">

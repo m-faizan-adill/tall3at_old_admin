@@ -1,22 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faSearch, 
-  faFilter, 
-  faPlus, 
-  faEye, 
-  faEdit, 
-  faTrash, 
-  faDownload, 
+import {
+  faSearch,
+  faFilter,
+  faPlus,
+  faEye,
+  faEdit,
+  faTrash,
+  faDownload,
   faPrint,
   faSort,
   faSortUp,
   faSortDown,
-  faTimes,
-  faCheckCircle,
-  faClock,
-  faTimesCircle,
-  faBan
+
 } from '@fortawesome/free-solid-svg-icons';
 import api from '../../services/api';
 import { API_CONFIG } from '../../constants/config';
@@ -25,6 +21,8 @@ import ShimmerLoading from '../ShimmerLoading';
 import SuccessModal from '../SuccessModal';
 import DeleteConfirmModal from '../DeleteConfirmModal';
 import './CategoriesList.css';
+import CustomTable from '../common/CustomTable';
+import { exportCategoriesListCSV, printCategoriesListPDF } from '../../utils/exportHelpers';
 
 // Utility function to get full image URL
 const getImageUrl = (imagePath) => {
@@ -85,15 +83,20 @@ const CategoriesList = ({ onViewDetails, onEdit }) => {
       formData.append('active', !currentStatus);
 
       await api.put(`/api/admin/categories/${categoryId}/status`, formData);
-      
+
       setSuccessMessage('تم تحديث حالة الفئة بنجاح');
       setShowSuccessModal(true);
-      fetchCategories();
+      await fetchCategories();
     } catch (err) {
       setError('حدث خطأ أثناء تحديث حالة الفئة');
       console.error('Error updating category status:', err);
     }
   };
+
+  //CSV
+  const exportCategories = async () => {
+    exportCategoriesListCSV(setError)
+  }
 
   const handleDelete = async (category) => {
     setCategoryToDelete(category);
@@ -102,16 +105,28 @@ const CategoriesList = ({ onViewDetails, onEdit }) => {
 
   const confirmDelete = async () => {
     try {
+      setShowDeleteModal(false);
       await api.delete(`/api/admin/categories/${categoryToDelete.id}`);
-      
+
+      setCategoryToDelete(null);
+      await fetchCategories();
+
       setSuccessMessage('تم حذف الفئة بنجاح');
       setShowSuccessModal(true);
-      setShowDeleteModal(false);
-      setCategoryToDelete(null);
-      fetchCategories();
+      setTimeout(() => {
+        setShowSuccessModal(null)
+      }, 2000)
+
     } catch (err) {
-      setError('حدث خطأ أثناء حذف الفئة');
-      console.error('Error deleting category:', err);
+
+      const validationError = err.response?.data?.message
+      const message = validationError || 'حدث خطأ أثناء حذف الفئة';
+
+      setError(message);
+      setTimeout(() => {
+        setError(null)
+      }, 4500)
+
     }
   };
 
@@ -129,62 +144,10 @@ const CategoriesList = ({ onViewDetails, onEdit }) => {
     return sortOrder === 'asc' ? faSortUp : faSortDown;
   };
 
+  //PDF Print
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    const printContent = `
-      <html dir="rtl">
-        <head>
-          <title>قائمة الفئات</title>
-          <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 12px; text-align: right; }
-            th { background-color: #f8f9fa; font-weight: bold; }
-            .status-active { color: #059669; }
-            .status-inactive { color: #dc2626; }
-            h1 { color: #1fc1de; text-align: center; }
-            .print-date { text-align: left; color: #666; margin-bottom: 20px; }
-          </style>
-        </head>
-        <body>
-          <h1>قائمة الفئات</h1>
-          <div class="print-date">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-SA')}</div>
-          <table>
-            <thead>
-              <tr>
-                <th>الاسم</th>
-                <th>الاسم بالإنجليزية</th>
-                <th>الحالة</th>
-                <th>عدد الرحلات</th>
-                <th>عدد الحجوزات</th>
-                <th>إجمالي الإيرادات</th>
-                <th>تاريخ الإنشاء</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${categories.map(category => `
-                <tr>
-                  <td>${category.name}</td>
-                  <td>${category.nameEn || '-'}</td>
-                  <td class="${category.active ? 'status-active' : 'status-inactive'}">
-                    ${category.active ? 'نشط' : 'غير نشط'}
-                  </td>
-                  <td>${category.tripsCount}</td>
-                  <td>${category.bookingsCount}</td>
-                  <td>${category.totalRevenue || 0} ريال</td>
-                  <td>${formatDate(category.createdAt)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `;
-    
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.print();
-  };
+    printCategoriesListPDF(categories, formatDate, setError);
+  }
 
   const renderShimmerRows = () => {
     return Array.from({ length: pageSize }).map((_, index) => (
@@ -202,6 +165,81 @@ const CategoriesList = ({ onViewDetails, onEdit }) => {
     ));
   };
 
+  const columns = [
+    {
+      key: 'id',
+      label: 'المعرف',
+      sortable: true,
+      render: (value) => <span className="category-id">#{value}</span>
+    },
+    {
+      key: 'name',
+      label: 'اسم الفئة',
+      sortable: true,
+      render: (value, row) => (
+        <div className="provider-info">
+          <img
+            src={getImageUrl(row.image)}
+            alt={row.name}
+            className="provider-avatar"
+            onError={(e) => {
+              e.target.src = '/assets/images/category.png';
+            }}
+          />
+          <span>{row.name}</span>
+        </div>
+      )
+    },
+    {
+      key: 'nameEn',
+      label: 'الاسم بالإنجليزية',
+      sortable: true
+    },
+    {
+      key: 'active',
+      label: 'الحالة',
+      sortable: true,
+      render: (value, row) => (
+        <div className="categories-status-toggle">
+          <input
+            type="checkbox"
+            id={`status-${row.id}`}
+            className="categories-status-toggle-input"
+            checked={row.active}
+            onChange={() => handleStatusToggle(row.id, row.active)}
+          />
+          <label htmlFor={`status-${row.id}`} className="categories-status-toggle-label">
+            <div className="categories-status-toggle-slider"></div>
+            <span className="categories-status-toggle-text">
+              {row.active ? 'نشط' : 'غير نشط'}
+            </span>
+          </label>
+        </div>
+      )
+    },
+    {
+      key: 'tripsCount',
+      label: 'عدد الرحلات',
+      sortable: true
+    },
+    {
+      key: 'bookingsCount',
+      label: 'عدد الحجوزات',
+      sortable: true
+    },
+    {
+      key: 'totalRevenue',
+      label: 'إجمالي الإيرادات',
+      render: (value) => `${value || 0} ريال`
+    },
+    {
+      key: 'createdAt',
+      label: 'تاريخ الإنشاء',
+      sortable: true,
+      render: (value) => formatDate(value)
+    }
+  ];
+
   return (
     <div className="categories-list">
       <div className="categories-header">
@@ -214,7 +252,7 @@ const CategoriesList = ({ onViewDetails, onEdit }) => {
             <FontAwesomeIcon icon={faPrint} />
             طباعة
           </button>
-          <button className="categories-btn categories-btn-export">
+          <button className="categories-btn categories-btn-export" onClick={exportCategories}>
             <FontAwesomeIcon icon={faDownload} />
             تصدير
           </button>
@@ -266,153 +304,46 @@ const CategoriesList = ({ onViewDetails, onEdit }) => {
         </div>
       )}
 
-      <div className="categories-table-container">
-        <table className="categories-table">
-          <thead>
-            <tr>
-              <th onClick={() => handleSort('id')}>
-                <FontAwesomeIcon icon={getSortIcon('id')} />
-                المعرف
-              </th>
-              <th onClick={() => handleSort('name')}>
-                <FontAwesomeIcon icon={getSortIcon('name')} />
-                اسم الفئة
-              </th>
-              <th onClick={() => handleSort('nameEn')}>
-                <FontAwesomeIcon icon={getSortIcon('nameEn')} />
-                الاسم بالإنجليزية
-              </th>
-              <th onClick={() => handleSort('active')}>
-                <FontAwesomeIcon icon={getSortIcon('active')} />
-                الحالة
-              </th>
-              <th onClick={() => handleSort('tripscount')}>
-                <FontAwesomeIcon icon={getSortIcon('tripscount')} />
-                عدد الرحلات
-              </th>
-              <th onClick={() => handleSort('bookingscount')}>
-                <FontAwesomeIcon icon={getSortIcon('bookingscount')} />
-                عدد الحجوزات
-              </th>
-              <th>إجمالي الإيرادات</th>
-              <th onClick={() => handleSort('createdAt')}>
-                <FontAwesomeIcon icon={getSortIcon('createdAt')} />
-                تاريخ الإنشاء
-              </th>
-              <th>الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              renderShimmerRows()
-            ) : categories.length > 0 ? (
-              categories.map((category) => (
-                <tr key={category.id}>
-                  <td>
-                    <span className="category-id">#{category.id}</span>
-                  </td>
-                  <td>
-                    <div className="category-info">
-                      <img
-                        src={getImageUrl(category.image)}
-                        alt={category.name}
-                        className="category-avatar"
-                        onError={(e) => {
-                          e.target.src = '/assets/images/category.png';
-                        }}
-                      />
-                      <span>{category.name}</span>
-                    </div>
-                  </td>
-                  <td>{category.nameEn || '-'}</td>
-                  <td>
-                    <div className="categories-status-toggle">
-                      <input
-                        type="checkbox"
-                        id={`status-${category.id}`}
-                        className="categories-status-toggle-input"
-                        checked={category.active}
-                        onChange={() => handleStatusToggle(category.id, category.active)}
-                      />
-                      <label htmlFor={`status-${category.id}`} className="categories-status-toggle-label">
-                        <div className="categories-status-toggle-slider"></div>
-                        <span className="categories-status-toggle-text">
-                          {category.active ? 'نشط' : 'غير نشط'}
-                        </span>
-                      </label>
-                    </div>
-                  </td>
-                  <td>{category.tripsCount}</td>
-                  <td>{category.bookingsCount}</td>
-                  <td>{category.totalRevenue || 0} ريال</td>
-                  <td>{formatDate(category.createdAt)}</td>
-                  <td>
-                    <div className="categories-action-buttons">
-                      <button
-                        className="categories-btn-action categories-btn-view"
-                        onClick={() => onViewDetails(category.id)}
-                        title="عرض التفاصيل"
-                      >
-                        <FontAwesomeIcon icon={faEye} />
-                      </button>
-                      <button
-                        className="categories-btn-action categories-btn-edit"
-                        onClick={() => onEdit(category.id)}
-                        title="تعديل"
-                      >
-                        <FontAwesomeIcon icon={faEdit} />
-                      </button>
-                      <button
-                        className="categories-btn-action categories-btn-delete"
-                        onClick={() => handleDelete(category)}
-                        title="حذف"
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="9" className="categories-no-data">
-                  <p>لا توجد فئات</p>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="categories-pagination">
-          <button
-            className="categories-btn-page"
-            onClick={() => setCurrentPage(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            السابق
-          </button>
-          
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+      <CustomTable
+        columns={columns}
+        data={categories}
+        loading={loading}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSort={handleSort}
+        pagination={{
+          currentPage,
+          totalPages,
+          onPageChange: (page) => setCurrentPage(page)
+        }}
+        noDataMessage="لا توجد فئات"
+        renderActions={(category) => (
+          <div className="categories-action-buttons">
             <button
-              key={page}
-              className={`categories-btn-page ${currentPage === page ? 'active' : ''}`}
-              onClick={() => setCurrentPage(page)}
+              className="categories-btn-action categories-btn-view"
+              onClick={() => onViewDetails(category.id)}
+              title="عرض التفاصيل"
             >
-              {page}
+              <FontAwesomeIcon icon={faEye} />
             </button>
-          ))}
-          
-          <button
-            className="categories-btn-page"
-            onClick={() => setCurrentPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            التالي
-          </button>
-        </div>
-      )}
+            <button
+              className="categories-btn-action categories-btn-edit"
+              onClick={() => onEdit(category.id)}
+              title="تعديل"
+            >
+              <FontAwesomeIcon icon={faEdit} />
+            </button>
+            <button
+              className="categories-btn-action categories-btn-delete"
+              onClick={() => handleDelete(category)}
+              title="حذف"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          </div>
+        )}
+      />
+
 
       <SuccessModal
         isVisible={showSuccessModal}
@@ -423,7 +354,7 @@ const CategoriesList = ({ onViewDetails, onEdit }) => {
       <DeleteConfirmModal
         isVisible={showDeleteModal}
         title="حذف الفئة"
-        message={`هل أنت متأكد من حذف الفئة "${categoryToDelete?.name}"؟`}
+        message={`هل أنت متأكد من حذف الفئة "${categoryToDelete?.name || ''}"؟`}
         onConfirm={confirmDelete}
         onClose={() => {
           setShowDeleteModal(false);

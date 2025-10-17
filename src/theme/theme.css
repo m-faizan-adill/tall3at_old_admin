@@ -1,0 +1,33 @@
+:root {
+  --sidebar-bg: #1e293b;
+}
+
+.dashboard-sidebar {
+  background-color: var(--sidebar-bg);
+  color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+.theme-switcher {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  justify-content: center;
+}
+
+.theme-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.theme-btn:hover {
+  transform: scale(1.1);
+}
+
+.theme-btn.active {
+  outline: 2px solid #fff;
+}

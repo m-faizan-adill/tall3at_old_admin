@@ -22,7 +22,7 @@ import './CategoryForm.css';
 const getImageUrl = (imagePath) => {
   if (!imagePath) return '/assets/images/default-category.png';
   if (imagePath.startsWith('http')) return imagePath;
-  return `${API_CONFIG.BASE_URL}/images/categories/${imagePath}`;
+  return `${API_CONFIG.BASE_URL}/${imagePath}`;
 };
 
 const CategoryForm = ({ categoryId, onBack, onSuccess }) => {
@@ -52,6 +52,7 @@ const CategoryForm = ({ categoryId, onBack, onSuccess }) => {
     try {
       const response = await api.get(`/api/admin/categories/${categoryId}`);
       const category = response.data;
+      console.log("category: ", category)
       setFormData({
         name: category.name,
         nameEn: category.nameEn || '',
@@ -290,6 +291,7 @@ const CategoryForm = ({ categoryId, onBack, onSuccess }) => {
                 accept="image/*"
                 onChange={handleImageChange}
                 className="category-file-input"
+                // required
               />
             </div>
           </div>

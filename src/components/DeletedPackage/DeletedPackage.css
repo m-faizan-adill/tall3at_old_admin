@@ -1,0 +1,144 @@
+:root {
+    --bg: #f4f7fb;
+    --text: #161a2d;
+    --muted: #495361;
+    --accent: #1fc1de;
+    --card: #ffffff;
+    --border: #e6ebf2;
+    --shadow: 0 10px 25px rgba(22, 26, 45, 0.06);
+}
+
+.deleted-packages {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+}
+
+.deleted-packages h2 {
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--accent);
+  border-bottom: 2px solid #eee;
+  padding-bottom: 5px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+table th,
+table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+table th {
+  background: #f5f5f5;
+  font-weight: bold;
+}
+
+table tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.loading {
+  color: #888;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+}
+
+.empty {
+  color: #666;
+  font-style: italic;
+}
+
+/* Filter styles */
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.filter-container input,
+.filter-container select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.filter-container button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #007bff;
+  color: white;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.filter-container button:hover {
+  background: #0056b3;
+}
+
+.filter-container .reset-btn {
+  background: #dc3545;
+}
+
+.filter-container .reset-btn:hover {
+  background: #a71d2a;
+}
+
+/* Table */
+.deleted-packages table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.deleted-packages th,
+.deleted-packages td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.deleted-packages th {
+  background: #f4f4f4;
+  font-weight: bold;
+}
+
+.pkg-data {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pkg-data li {
+  font-size: 14px;
+  margin: 2px 0;
+}
+
+.loading {
+  color: #007bff;
+}
+
+.error {
+  color: red;
+}
+
+.empty {
+  color: #555;
+  font-style: italic;
+}

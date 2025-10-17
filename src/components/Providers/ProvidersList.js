@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faFilter, 
-  faEye, 
-  faEdit, 
-  faTrash, 
+import {
+  faFilter,
+  faEye,
+  faEdit,
+  faTrash,
   faPlus,
   faDownload,
   faPrint,
@@ -22,11 +22,14 @@ import { formatDate } from '../../utils/dateUtils';
 import SuccessModal from '../SuccessModal';
 import DeleteConfirmModal from '../DeleteConfirmModal';
 import './ProvidersList.css';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import CustomTable from '../common/CustomTable';
+import { exportProvidersListCSV, printProvidersListPDF } from '../../utils/exportHelpers';
 
 // Utility function to get full image URL
 const getImageUrl = (imagePath) => {
   if (!imagePath || imagePath === 'null' || imagePath === 'undefined' || imagePath.trim() === '') {
-    return '/assets/images/default-avatar.png';
+    return `${API_CONFIG.BASE_URL}/assets/images/default-avatar.png`;
   }
   if (imagePath.startsWith('http')) return imagePath;
   return `${API_CONFIG.BASE_URL}${imagePath}`;
@@ -34,10 +37,12 @@ const getImageUrl = (imagePath) => {
 
 const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => {
   const [providers, setProviders] = useState([]);
+  console.log('ProvidersList render, providers:', providers);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchParams] = useSearchParams();
   const [pagination, setPagination] = useState({
-    currentPage: 1,
+    currentPage: parseInt(searchParams.get("page")) || 1,
     totalPages: 1,
     totalCount: 0,
     pageSize: 10
@@ -57,16 +62,24 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
     isVisible: false,
     message: ''
   });
-  const [deleteConfirmModal, setDeleteConfirmModal] = useState({
-    isVisible: false,
-    providerId: null,
-    providerName: ''
-  });
+  // const [deleteConfirmModal, setDeleteConfirmModal] = useState({
+  //   isVisible: false,
+  //   providerId: null,
+  //   providerName: ''
+
+  // });
+  const [deleteModal, setDeleteModal] = useState({ isVisible: false, providerId: null, providerName: '' });
+
+  const navigate = useNavigate();
 
   useEffect(() => {
+    // const queryParams = new URLSearchParams(window.location.search);
+    //in progress
+    const page = parseInt(searchParams.get('page')) || 1;
+    setPagination((prev) => ({ ...prev, currentPage: page }));
     fetchProviders();
     fetchCities();
-  }, [pagination.currentPage, filters]);
+  }, [pagination.currentPage, filters, searchParams]);
 
   // Handle clicking outside city dropdown
   useEffect(() => {
@@ -117,9 +130,10 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
   };
 
   const handleSearch = (e) => {
-    e.preventDefault();
+    // e.preventDefault();
+    const value = e.target.value
     setPagination(prev => ({ ...prev, currentPage: 1 }));
-    setFilters(prev => ({ ...prev, search: e.target.value }));
+    setFilters(prev => ({ ...prev, search: value }));
   };
 
   const handleFilterChange = (key, value) => {
@@ -133,16 +147,19 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
   };
 
   const handlePageChange = (page) => {
+
     setPagination(prev => ({ ...prev, currentPage: page }));
+    navigate(`/admin/providers?page=${page}`);
+    fetchProviders(page);
   };
 
   const handleStatusChange = async (providerId, newStatus) => {
     try {
       const formData = new FormData();
       formData.append('status', newStatus);
-      
+
       console.log('Sending status update:', { providerId, status: newStatus });
-      
+
       await api.put(`/api/admin/providers/${providerId}/status`, formData);
       fetchProviders();
       showSuccessMessage('تم تحديث حالة المزود بنجاح');
@@ -153,126 +170,9 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
     }
   };
 
+  //PDF
   const printProviders = () => {
-    try {
-      // Create a print-friendly version of the providers table
-      const printWindow = window.open('', '_blank');
-      const printContent = `
-        <!DOCTYPE html>
-        <html dir="rtl">
-        <head>
-          <title>قائمة المزودين - طلعات</title>
-          <style>
-            body { 
-              font-family: 'Cairo', 'Tajawal', 'Noto Kufi Arabic', Arial, sans-serif; 
-              margin: 20px; 
-              direction: rtl;
-            }
-            .header { 
-              text-align: center; 
-              margin-bottom: 30px; 
-              border-bottom: 2px solid #1fc1de; 
-              padding-bottom: 20px;
-            }
-            .header h1 { 
-              color: #1fc1de; 
-              margin: 0; 
-              font-size: 24px;
-            }
-            .header p { 
-              color: #666; 
-              margin: 5px 0 0 0; 
-              font-size: 14px;
-            }
-            table { 
-              width: 100%; 
-              border-collapse: collapse; 
-              margin-top: 20px;
-              font-size: 12px;
-            }
-            th, td { 
-              border: 1px solid #ddd; 
-              padding: 8px; 
-              text-align: right;
-            }
-            th { 
-              background-color: #f8f9fa; 
-              font-weight: bold;
-              color: #1fc1de;
-            }
-            .status-active { color: #10b981; font-weight: bold; }
-            .status-pending { color: #f59e0b; font-weight: bold; }
-            .status-suspended { color: #ef4444; font-weight: bold; }
-            .status-deleted { color: #6b7280; font-weight: bold; }
-            .footer { 
-              margin-top: 30px; 
-              text-align: center; 
-              color: #666; 
-              font-size: 12px;
-              border-top: 1px solid #ddd;
-              padding-top: 20px;
-            }
-            @media print {
-              body { margin: 0; }
-              .no-print { display: none; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>قائمة المزودين</h1>
-            <p>نظام إدارة طلعات - ${new Date().toLocaleDateString('ar-SA')}</p>
-          </div>
-          
-          <table>
-            <thead>
-              <tr>
-                <th>الاسم الكامل</th>
-                <th>رقم الهاتف</th>
-                <th>الحالة</th>
-                <th>المدينة</th>
-                <th>عدد الرحلات</th>
-                <th>عدد الحجوزات</th>
-                <th>إجمالي الأرباح</th>
-                <th>تاريخ الإنشاء</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${providers.map(provider => `
-                <tr>
-                  <td>${provider.fullName}</td>
-                  <td>${provider.userName}</td>
-                  <td class="status-${provider.status.toLowerCase()}">${getStatusText(provider.status)}</td>
-                  <td>${provider.cityName}</td>
-                  <td>${provider.tripsCount}</td>
-                  <td>${provider.bookingsCount}</td>
-                  <td>${provider.totalEarnings?.toFixed(2) || '0'} ريال</td>
-                  <td>${formatDate(provider.createdAt)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-          
-          <div class="footer">
-            <p>تم الطباعة في: ${new Date().toLocaleString('ar-SA')}</p>
-            <p>إجمالي المزودين: ${providers.length}</p>
-          </div>
-        </body>
-        </html>
-      `;
-      
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      
-      // Wait for content to load then print
-      printWindow.onload = function() {
-        printWindow.print();
-        printWindow.close();
-      };
-    } catch (err) {
-      setError('فشل في طباعة البيانات');
-      console.error('Error printing providers:', err);
-    }
+    printProvidersListPDF(providers, getStatusText, formatDate, setError);
   };
 
   const getStatusText = (status) => {
@@ -295,60 +195,41 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
     }
   };
 
+  //CSV
   const exportProviders = async () => {
-    try {
-      const params = new URLSearchParams({
-        status: filters.status,
-        cityId: filters.cityId,
-        format: 'csv'
-      });
-      
-      const response = await api.get(`/api/admin/providers/export?${params}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'providers.csv');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (err) {
-      setError('فشل في تصدير البيانات');
-    }
-  };
+    exportProvidersListCSV(filters || {}, setError)
+  }
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'Active': { 
-        class: 'status-active', 
+      'Active': {
+        class: 'status-active',
         text: 'نشط',
         icon: faCheckCircle
       },
-      'Pending': { 
-        class: 'status-pending', 
+      'Pending': {
+        class: 'status-pending',
         text: 'في الانتظار',
         icon: faClock
       },
-      'Suspended': { 
-        class: 'status-suspended', 
+      'Suspended': {
+        class: 'status-suspended',
         text: 'معلق',
         icon: faTimesCircle
       },
-      'Deleted': { 
-        class: 'status-deleted', 
+      'Deleted': {
+        class: 'status-deleted',
         text: 'محذوف',
         icon: faUserSlash
       }
     };
-    
-    const config = statusConfig[status] || { 
-      class: 'status-default', 
+
+    const config = statusConfig[status] || {
+      class: 'status-default',
       text: status,
       icon: faUserSlash
     };
-    
+
     return (
       <span className={`status-badge ${config.class}`}>
         <FontAwesomeIcon icon={config.icon} />
@@ -359,13 +240,13 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
 
   const getSortIcon = (field) => {
     if (filters.sortBy !== field) return <FontAwesomeIcon icon={faSort} />;
-    return filters.sortOrder === 'asc' ? 
-      <FontAwesomeIcon icon={faSortUp} /> : 
+    return filters.sortOrder === 'asc' ?
+      <FontAwesomeIcon icon={faSortUp} /> :
       <FontAwesomeIcon icon={faSortDown} />;
   };
 
   // Filter cities based on search
-  const filteredCities = cities.filter(city => 
+  const filteredCities = cities.filter(city =>
     city.name.toLowerCase().includes(citySearch.toLowerCase())
   );
 
@@ -383,11 +264,6 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
     }
   };
 
-  const getSelectedCityName = () => {
-    const selectedCity = cities.find(city => city.id.toString() === filters.cityId);
-    return selectedCity ? selectedCity.name : '';
-  };
-
   const showSuccessMessage = (message) => {
     setSuccessModal({
       isVisible: true,
@@ -403,7 +279,7 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
   };
 
   const showDeleteConfirmModal = (providerId, providerName) => {
-    setDeleteConfirmModal({
+    setDeleteModal({
       isVisible: true,
       providerId: providerId,
       providerName: providerName
@@ -411,7 +287,7 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
   };
 
   const closeDeleteConfirmModal = () => {
-    setDeleteConfirmModal({
+    setDeleteModal({
       isVisible: false,
       providerId: null,
       providerName: ''
@@ -426,7 +302,7 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
             <h2>إدارة المزودين</h2>
             <p>عرض وإدارة جميع مزودي الخدمات في النظام</p>
           </div>
-          
+
           <div className="providers-actions">
             <button className="btn btn-print" disabled>
               <FontAwesomeIcon icon={faPrint} />
@@ -466,6 +342,69 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
     );
   }
 
+  const columns = [
+    {
+      key: "fullName",
+      label: "الاسم الكامل",
+      sortable: true,
+      render: (value, provider) => {
+        // pick random avatar if profileImage is missing
+        const randomAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+        const imageSrc = getImageUrl(provider.profileImage) || randomAvatar;
+
+        return (
+          <div className="provider-info">
+            <img
+              src={imageSrc}
+              alt={provider.fullName}
+              className="provider-avatar"
+              onError={(e) => {
+                e.target.src = randomAvatar;
+              }}
+            />
+            <span>{provider.fullName}</span>
+          </div>
+        );
+      },
+    },
+    { key: 'userName', label: 'رقم الهاتف', sortable: true },
+    {
+      key: 'status',
+      label: 'الحالة',
+      sortable: true,
+      render: (_, p) => (
+        <div className="status-toggle">
+          <input
+            type="checkbox"
+            id={`status-${p.id}`}
+            className="status-toggle-input"
+            checked={p.status === 'Active'}
+            onChange={(e) => handleStatusChange(p.id, e.target.checked ? 'Active' : 'Suspended')}
+          />
+          <label htmlFor={`status-${p.id}`} className="status-toggle-label">
+            <span className="status-toggle-slider"></span>
+            <span className="status-toggle-text">{p.status === 'Active' ? 'نشط' : 'معلق'}</span>
+          </label>
+        </div>
+      )
+    },
+    { key: 'cityName', label: 'المدينة' },
+    { key: 'tripsCount', label: 'عدد الرحلات' },
+    { key: 'bookingsCount', label: 'عدد الحجوزات', sortable: true },
+    {
+      key: 'totalEarnings',
+      label: 'إجمالي الأرباح',
+      render: (v) => `${v?.toFixed(2) || '0'} ريال`
+    },
+    {
+      key: 'createdAt',
+      label: 'تاريخ الإنشاء',
+      sortable: true,
+      render: (v) => formatDate(v)
+    }
+  ];
+
   return (
     <div className="providers-list">
       <div className="providers-header">
@@ -473,7 +412,7 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
           <h2>إدارة المزودين</h2>
           <p>عرض وإدارة جميع مزودي الخدمات في النظام</p>
         </div>
-        
+
         <div className="providers-actions">
           <button className="btn btn-print" onClick={printProviders}>
             <FontAwesomeIcon icon={faPrint} />
@@ -500,7 +439,7 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
           />
         </div>
 
-        <button 
+        <button
           className={`filter-toggle ${showFilters ? 'active' : ''}`}
           onClick={() => setShowFilters(!showFilters)}
         >
@@ -509,20 +448,24 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
         </button>
 
         {showFilters && (
-          <div className="filters-panel">
-            <select 
-              value={filters.status} 
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-            >
-              <option value="">جميع الحالات</option>
-              <option value="Active">نشط</option>
-              <option value="Pending">في الانتظار</option>
-              <option value="Suspended">معلق</option>
-              <option value="Deleted">محذوف</option>
-            </select>
+          <div className="filters-panels">
+            <div className="select-wrap">
+
+              <select
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+              >
+                <option value="">جميع الحالات</option>
+                <option value="Active">نشط</option>
+                <option value="Pending">في الانتظار</option>
+                <option value="Suspended">معلق</option>
+                <option value="Deleted">محذوف</option>
+              </select>
+
+            </div>
 
             <div className="city-search-container">
-              <div className="city-search-input">
+              <div className="city-search-input select-wrap">
                 <input
                   type="text"
                   placeholder="البحث في المدن..."
@@ -530,7 +473,7 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
                   onChange={handleCitySearchChange}
                   onFocus={() => setShowCityDropdown(true)}
                 />
-                <button 
+                <button
                   type="button"
                   className="city-clear-btn"
                   onClick={() => {
@@ -543,7 +486,7 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
                   ×
                 </button>
               </div>
-              
+
               {showCityDropdown && (
                 <div className="city-dropdown">
                   {filteredCities.length > 0 ? (
@@ -568,7 +511,7 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
 
       {error && <div className="error-message">{error}</div>}
 
-      <div className="providers-table-container">
+      {/* <div className="providers-table-container">
         <table className="providers-table">
           <thead>
             <tr>
@@ -583,7 +526,7 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
               </th>
               <th>المدينة</th>
               <th>عدد الرحلات</th>
-              <th>عدد الحجوزات</th>
+              <th onClick={() => handleSort('bookingsCount')}>عدد الحجوزات {getSortIcon('bookingsCount')}</th>
               <th>إجمالي الأرباح</th>
               <th onClick={() => handleSort('createdAt')}>
                 تاريخ الإنشاء {getSortIcon('createdAt')}
@@ -597,8 +540,8 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
                 <td>
                   <div className="provider-info">
                     {provider.profileImage && provider.profileImage !== 'null' && provider.profileImage !== 'undefined' && provider.profileImage.trim() !== '' ? (
-                      <img 
-                        src={getImageUrl(provider.profileImage)} 
+                      <img
+                        src={getImageUrl(provider.profileImage)}
                         alt={provider.fullName}
                         className="provider-avatar"
                         onError={(e) => {
@@ -641,21 +584,21 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
                 <td>{formatDate(provider.createdAt)}</td>
                 <td>
                   <div className="categories-action-buttons">
-                    <button 
+                    <button
                       className="categories-btn-action categories-btn-view"
                       onClick={() => onViewProvider(provider.id)}
                       title="عرض التفاصيل"
                     >
                       <FontAwesomeIcon icon={faEye} />
                     </button>
-                    <button 
+                    <button
                       className="categories-btn-action categories-btn-edit"
                       onClick={() => onEditProvider(provider.id)}
                       title="تعديل"
                     >
                       <FontAwesomeIcon icon={faEdit} />
                     </button>
-                    <button 
+                    <button
                       className="categories-btn-action categories-btn-delete"
                       onClick={() => showDeleteConfirmModal(provider.id, provider.fullName)}
                       title="حذف"
@@ -674,29 +617,56 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
         <div className="no-data">
           <p>لا توجد مزودين للعرض</p>
         </div>
-      )}
+      )} */}
 
-      {pagination.totalPages > 1 && (
+      {/* {pagination.totalPages > 1 && (
         <div className="pagination">
-          <button 
+          <button
             className="btn-page"
             disabled={pagination.currentPage === 1}
             onClick={() => handlePageChange(pagination.currentPage - 1)}
           >
             السابق
           </button>
-          
-          {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => (
-            <button
-              key={page}
-              className={`btn-page ${page === pagination.currentPage ? 'active' : ''}`}
-              onClick={() => handlePageChange(page)}
-            >
-              {page}
-            </button>
-          ))}
-          
-          <button 
+
+          {(() => {
+            let pages = [];
+            let total = pagination.totalPages;
+            let current = pagination.currentPage;
+
+            if (current > 3) {
+              pages.push(1);
+              if (current > 4) pages.push("...");
+            }
+
+            let start = Math.max(1, current - 2);
+            let end = Math.min(total, current + 2);
+
+            for (let i = start; i <= end; i++) {
+              if (i !== 1 && i !== total) pages.push(i);
+            }
+
+            if (current < total - 2) {
+              if (current < total - 3) pages.push("...");
+              pages.push(total);
+            }
+
+            return pages.map((p, idx) =>
+              p === "..." ? (
+                <span key={`dots-${idx}`} className="dots">...</span>
+              ) : (
+                <button
+                  key={p}
+                  className={`btn-page ${p === current ? 'active' : ''}`}
+                  onClick={() => handlePageChange(p)}
+                >
+                  {p}
+                </button>
+              )
+            );
+          })()}
+
+          <button
             className="btn-page"
             disabled={pagination.currentPage === pagination.totalPages}
             onClick={() => handlePageChange(pagination.currentPage + 1)}
@@ -704,24 +674,65 @@ const ProvidersList = ({ onViewProvider, onEditProvider, onCreateProvider }) => 
             التالي
           </button>
         </div>
-      )}
+      )} */}
 
-      <SuccessModal 
+      <CustomTable
+        columns={columns}
+        data={providers}
+        loading={loading}
+        sortBy={filters.sortBy}
+        sortOrder={filters.sortOrder}
+        onSort={handleSort}
+        pagination={{
+          currentPage: pagination.currentPage,
+          totalPages: pagination.totalPages,
+          onPageChange: handlePageChange
+        }}
+        noDataMessage="لا توجد بيانات مزودين متاحة"
+        renderActions={(provider) => (
+          <div className="categories-action-buttons">
+            <button
+              className="categories-btn-action categories-btn-view"
+              onClick={() => onViewProvider(provider.id)}
+              title="عرض التفاصيل"
+            >
+              <FontAwesomeIcon icon={faEye} />
+            </button>
+            <button
+              className="categories-btn-action categories-btn-edit"
+              onClick={() => onEditProvider(provider.id)}
+              title="تعديل"
+            >
+              <FontAwesomeIcon icon={faEdit} />
+            </button>
+            <button
+              className="categories-btn-action categories-btn-delete"
+              onClick={() => setDeleteModal({ isVisible: true, providerId: provider.id, providerName: provider.fullName })}
+              title="حذف"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          </div>
+        )}
+      />
+
+
+      <SuccessModal
         message={successModal.message}
         isVisible={successModal.isVisible}
         onClose={closeSuccessModal}
       />
 
       <DeleteConfirmModal
-        isVisible={deleteConfirmModal.isVisible}
+        isVisible={deleteModal.isVisible}
         onClose={closeDeleteConfirmModal}
         onConfirm={() => {
-          handleDelete(deleteConfirmModal.providerId);
+          handleDelete(deleteModal.providerId);
           closeDeleteConfirmModal();
         }}
         title="تأكيد حذف المزود"
         message="هل أنت متأكد من أنك تريد حذف المزود"
-        itemName={deleteConfirmModal.providerName}
+        itemName={deleteModal.providerName}
       />
     </div>
   );

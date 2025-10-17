@@ -153,6 +153,7 @@
   font-size: 14px;
   background: white;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .city-search-input input:focus,
@@ -324,9 +325,10 @@
 
 /* Service Options */
 .trip-options {
-  display: flex;
+  /* display: table-column; */
   flex-direction: column;
   gap: 16px;
+  display: flex;
 }
 
 .trip-option-item {
@@ -413,12 +415,12 @@
   transition: all 0.3s ease;
 }
 
-.trip-checkbox-label input[type="checkbox"]:checked + .trip-checkmark {
+.trip-checkbox-label input[type="checkbox"]:checked+.trip-checkmark {
   background: #1fc1de;
   border-color: #1fc1de;
 }
 
-.trip-checkbox-label input[type="checkbox"]:checked + .trip-checkmark::after {
+.trip-checkbox-label input[type="checkbox"]:checked+.trip-checkmark::after {
   content: '✓';
   position: absolute;
   top: 50%;
@@ -432,6 +434,7 @@
 /* Form Actions */
 .trip-form-actions {
   display: flex;
+  align-items: center; 
   justify-content: flex-end;
   gap: 16px;
   padding-top: 24px;
@@ -500,6 +503,14 @@
     text-align: center;
   }
 
+  .trip-options{
+    display: table-column;
+  }
+
+  .trip-option-item{
+    display: table-column;
+  }
+
   .trip-form-content {
     padding: 20px;
   }
@@ -527,7 +538,7 @@
     width: 100%;
     justify-content: center;
   }
-} 
+}
 
 /* Trip Packages Styles */
 .trip-packages {
@@ -559,7 +570,7 @@
   font-weight: 600;
   color: #374151;
   margin-bottom: 6px;
-  display: block;
+  /* display: block; */
 }
 
 .trip-package-item .trip-form-group input,
@@ -663,12 +674,12 @@
   background: white;
 }
 
-.trip-package-item .trip-checkbox-label input[type="checkbox"]:checked + .trip-checkmark {
+.trip-package-item .trip-checkbox-label input[type="checkbox"]:checked+.trip-checkmark {
   background: #1fc1de;
   border-color: #1fc1de;
 }
 
-.trip-package-item .trip-checkbox-label input[type="checkbox"]:checked + .trip-checkmark::after {
+.trip-package-item .trip-checkbox-label input[type="checkbox"]:checked+.trip-checkmark::after {
   content: '✓';
   position: absolute;
   top: 50%;
@@ -685,18 +696,18 @@
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .trip-package-item {
     padding: 16px;
   }
-  
+
   .trip-remove-package-btn {
     top: 8px;
     left: 8px;
     width: 28px;
     height: 28px;
   }
-  
+
   .trip-add-package-btn {
     padding: 10px 20px;
     font-size: 0.8rem;
@@ -707,14 +718,32 @@
   .trip-package-item {
     padding: 12px;
   }
-  
+
   .trip-package-grid {
     gap: 10px;
   }
-  
+
   .trip-package-item .trip-form-group input,
   .trip-package-item .trip-form-group textarea {
     padding: 8px 10px;
     font-size: 0.8rem;
   }
-} 
+}
+
+.cost-without-commission {
+  display: block;
+  font-size: 0.8em;
+  color: #666;
+  margin-top: 4px;
+}
+
+.trip-form-error-inline {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 8px 14px;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap; /* ek line me show hoga */
+}

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faSearch, 
-  faEye, 
-  faEdit, 
-  faTrash, 
+import {
+  faEye,
+  faEdit,
+  faTrash,
   faPlus,
   faDownload,
   faPrint,
@@ -23,12 +22,14 @@ import { formatDate } from '../../utils/dateUtils';
 import SuccessModal from '../SuccessModal';
 import DeleteConfirmModal from '../DeleteConfirmModal';
 import './CustomersList.css';
+import CustomTable from '../common/CustomTable';
+import { exportCustomersListCSV, printCustomersListPDF } from '../../utils/exportHelpers';
 
 // Utility function to get full image URL
 const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
   if (imagePath.startsWith('http')) return imagePath;
-  return `${API_CONFIG.BASE_URL}${imagePath}`;
+  return `${API_CONFIG.BASE_URL}/${imagePath}`;
 };
 
 const CustomersList = ({ onViewCustomer, onEditCustomer, onCreateCustomer }) => {
@@ -152,9 +153,9 @@ const CustomersList = ({ onViewCustomer, onEditCustomer, onCreateCustomer }) => 
     try {
       const formData = new FormData();
       formData.append('status', newStatus);
-      
+
       console.log('Sending status update:', { customerId, status: newStatus });
-      
+
       await api.put(`/api/admin/users/${customerId}/status`, formData);
       fetchCustomers();
       showSuccessMessage('تم تحديث حالة العميل بنجاح');
@@ -165,109 +166,9 @@ const CustomersList = ({ onViewCustomer, onEditCustomer, onCreateCustomer }) => 
     }
   };
 
+  //PDF
   const printCustomers = () => {
-    try {
-      // Create a print-friendly version of the customers table
-      const printWindow = window.open('', '_blank');
-      const printContent = `
-        <!DOCTYPE html>
-        <html dir="rtl">
-        <head>
-          <title>قائمة العملاء - طلعات</title>
-          <style>
-            body { 
-              font-family: 'Cairo', 'Tajawal', 'Noto Kufi Arabic', Arial, sans-serif; 
-              margin: 20px; 
-              direction: rtl;
-            }
-            .header { 
-              text-align: center; 
-              margin-bottom: 30px; 
-              border-bottom: 2px solid #1fc1de; 
-              padding-bottom: 20px;
-            }
-            .header h1 { 
-              color: #1fc1de; 
-              margin: 0; 
-              font-size: 24px;
-            }
-            .header p { 
-              color: #666; 
-              margin: 5px 0 0 0; 
-              font-size: 14px;
-            }
-            table { 
-              width: 100%; 
-              border-collapse: collapse; 
-              margin-top: 20px;
-              font-size: 12px;
-            }
-            th, td { 
-              border: 1px solid #ddd; 
-              padding: 8px; 
-              text-align: right;
-            }
-            th { 
-              background-color: #f8f9fa; 
-              font-weight: bold;
-              color: #1fc1de;
-            }
-            .status-active { color: #10b981; font-weight: bold; }
-            .status-pending { color: #f59e0b; font-weight: bold; }
-            .status-suspended { color: #ef4444; font-weight: bold; }
-            .status-deleted { color: #6b7280; font-weight: bold; }
-            @media print {
-              body { margin: 0; }
-              .no-print { display: none; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>قائمة العملاء</h1>
-            <p>تطبيق طلعات - ${new Date().toLocaleDateString('ar-SA')}</p>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>الاسم الكامل</th>
-                <th>رقم الهاتف</th>
-                <th>البريد الإلكتروني</th>
-                <th>الحالة</th>
-                <th>المدينة</th>
-                <th>عدد الحجوزات</th>
-                <th>إجمالي الإنفاق</th>
-                <th>تاريخ الإنشاء</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${customers.map(customer => `
-                <tr>
-                  <td>${customer.fullName}</td>
-                  <td>${customer.userName}</td>
-                  <td>${customer.email}</td>
-                  <td class="status-${customer.status.toLowerCase()}">${getStatusText(customer.status)}</td>
-                  <td>${customer.cityName || 'غير محدد'}</td>
-                  <td>${customer.bookingsCount}</td>
-                  <td>${customer.totalSpent?.toFixed(2) || '0'} ريال</td>
-                  <td>${formatDate(customer.createdAt)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </body>
-        </html>
-      `;
-      
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
-    } catch (err) {
-      setError('فشل في طباعة البيانات');
-      console.error('Error printing customers:', err);
-    }
+    printCustomersListPDF(customers, getStatusText, formatDate, setError);
   };
 
   const getStatusText = (status) => {
@@ -286,65 +187,53 @@ const CustomersList = ({ onViewCustomer, onEditCustomer, onCreateCustomer }) => 
       fetchCustomers();
       showSuccessMessage('تم حذف العميل بنجاح');
     } catch (err) {
-      setError('فشل في حذف العميل');
+
+
+      const validationError = err.response?.data?.message
+      const message = validationError || 'فشل في حذف العميل';
+
+      setError(message);
+      setTimeout(() => {
+        setError(null)
+      }, 4500)
     }
   };
 
+  //CSV
   const exportCustomers = async () => {
-    try {
-      const params = new URLSearchParams({
-        role: 'customer',
-        status: filters.status,
-        cityId: filters.cityId,
-        format: 'csv'
-      });
-      
-      const response = await api.get(`/api/admin/users/export?${params}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'customers.csv');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (err) {
-      setError('فشل في تصدير البيانات');
-    }
-  };
+    exportCustomersListCSV(filters || {}, setError)
+  }
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'Active': { 
-        class: 'status-active', 
+      'Active': {
+        class: 'status-active',
         text: 'نشط',
         icon: faCheckCircle
       },
-      'Pending': { 
-        class: 'status-pending', 
+      'Pending': {
+        class: 'status-pending',
         text: 'في الانتظار',
         icon: faClock
       },
-      'Suspended': { 
-        class: 'status-suspended', 
+      'Suspended': {
+        class: 'status-suspended',
         text: 'معلق',
         icon: faTimesCircle
       },
-      'Deleted': { 
-        class: 'status-deleted', 
+      'Deleted': {
+        class: 'status-deleted',
         text: 'محذوف',
         icon: faUserSlash
       }
     };
-    
-    const config = statusConfig[status] || { 
-      class: 'status-default', 
+
+    const config = statusConfig[status] || {
+      class: 'status-default',
       text: status,
       icon: faUserSlash
     };
-    
+
     return (
       <span className={`status-badge ${config.class}`}>
         <FontAwesomeIcon icon={config.icon} />
@@ -355,13 +244,13 @@ const CustomersList = ({ onViewCustomer, onEditCustomer, onCreateCustomer }) => 
 
   const getSortIcon = (field) => {
     if (filters.sortBy !== field) return <FontAwesomeIcon icon={faSort} />;
-    return filters.sortOrder === 'asc' ? 
-      <FontAwesomeIcon icon={faSortUp} /> : 
+    return filters.sortOrder === 'asc' ?
+      <FontAwesomeIcon icon={faSortUp} /> :
       <FontAwesomeIcon icon={faSortDown} />;
   };
 
   // Filter cities based on search
-  const filteredCities = cities.filter(city => 
+  const filteredCities = cities.filter(city =>
     city.name.toLowerCase().includes(citySearch.toLowerCase())
   );
 
@@ -377,11 +266,6 @@ const CustomersList = ({ onViewCustomer, onEditCustomer, onCreateCustomer }) => 
     if (!e.target.value) {
       handleFilterChange('cityId', '');
     }
-  };
-
-  const getSelectedCityName = () => {
-    const selectedCity = cities.find(city => city.id.toString() === filters.cityId);
-    return selectedCity ? selectedCity.name : '';
   };
 
   const showSuccessMessage = (message) => {
@@ -452,6 +336,71 @@ const CustomersList = ({ onViewCustomer, onEditCustomer, onCreateCustomer }) => 
     );
   }
 
+
+  const columns = [
+
+    {
+      key: "fullName",
+      label: "الاسم الكامل",
+      sortable: true,
+      render: (value, customer) => {
+        // pick random avatar if profileImage is missing
+        const randomAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+        const imageSrc = getImageUrl(customer.profileImage) || randomAvatar;
+
+        return (
+          <div className="provider-info">
+            <img
+              src={imageSrc}
+              alt={customer.fullName}
+              className="provider-avatar"
+              onError={(e) => {
+                e.target.src = randomAvatar;
+              }}
+            />
+            <span>{customer.fullName}</span>
+          </div>
+        );
+      },
+    },
+
+    { key: 'userName', label: 'رقم الهاتف', sortable: true },
+    { key: 'email', label: 'البريد الإلكتروني', sortable: true },
+    {
+      key: 'status',
+      label: 'الحالة',
+      sortable: true,
+      render: (v, c) => (
+        <div className="status-toggle">
+          <input
+            type="checkbox"
+            id={`status-${c.id}`}
+            className="status-toggle-input"
+            checked={c.status === 'Active'}
+            onChange={(e) =>
+              handleStatusChange(c.id, e.target.checked ? 'Active' : 'Suspended')
+            }
+          />
+          <label htmlFor={`status-${c.id}`} className="status-toggle-label">
+            <span className="status-toggle-slider"></span>
+            <span className="status-toggle-text">
+              {c.status === 'Active' ? 'نشط' : 'معلق'}
+            </span>
+          </label>
+        </div>
+      )
+    },
+    { key: 'cityName', label: 'المدينة' },
+    { key: 'bookingsCount', label: 'عدد الحجوزات', sortable: true },
+    {
+      key: 'createdAt',
+      label: 'تاريخ الإنشاء',
+      sortable: true,
+      render: (v) => formatDate(v)
+    }
+  ];
+
   return (
     <div className="customers-list">
       <div className="customers-header">
@@ -459,7 +408,7 @@ const CustomersList = ({ onViewCustomer, onEditCustomer, onCreateCustomer }) => 
           <h2>إدارة العملاء</h2>
           <p>عرض وإدارة جميع العملاء في النظام</p>
         </div>
-        
+
         <div className="customers-actions">
           <button className="btn btn-print" onClick={printCustomers}>
             <FontAwesomeIcon icon={faPrint} />
@@ -487,40 +436,46 @@ const CustomersList = ({ onViewCustomer, onEditCustomer, onCreateCustomer }) => 
         </div>
 
         <div className="filter-group">
-          <select 
-            value={filters.status} 
-            onChange={(e) => handleFilterChange('status', e.target.value)}
-          >
-            <option value="">جميع الحالات</option>
-            <option value="Active">نشط</option>
-            <option value="NotActive">غير نشط</option>
-          </select>
+          <div className="select-wrap">
+            <select
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+            >
+              <option value="">جميع الحالات</option>
+              <option value="Active">نشط</option>
+              <option value="NotActive">غير نشط</option>
+            </select>
+          </div>
+
         </div>
 
         <div className="filter-group">
           <div className="city-search-container">
-            <div className="city-search-input">
-              <input
-                type="text"
-                placeholder="البحث في المدن..."
-                value={citySearch}
-                onChange={handleCitySearchChange}
-                onFocus={() => setShowCityDropdown(true)}
-              />
-              <button 
-                type="button"
-                className="city-clear-btn"
-                onClick={() => {
-                  setCitySearch('');
-                  handleFilterChange('cityId', '');
-                  setShowCityDropdown(false);
-                }}
-                style={{ display: citySearch ? 'block' : 'none' }}
-              >
-                ×
-              </button>
+            <div className="select-wrap">
+
+              <div className="city-search-input">
+                <input
+                  type="text"
+                  placeholder="البحث في المدن..."
+                  value={citySearch}
+                  onChange={handleCitySearchChange}
+                  onFocus={() => setShowCityDropdown(true)}
+                />
+                <button
+                  type="button"
+                  className="city-clear-btn"
+                  onClick={() => {
+                    setCitySearch('');
+                    handleFilterChange('cityId', '');
+                    setShowCityDropdown(false);
+                  }}
+                  style={{ display: citySearch ? 'block' : 'none' }}
+                >
+                  ×
+                </button>
+              </div>
             </div>
-            
+
             {showCityDropdown && (
               <div className="city-dropdown">
                 {filteredCities.length > 0 ? (
@@ -544,151 +499,49 @@ const CustomersList = ({ onViewCustomer, onEditCustomer, onCreateCustomer }) => 
 
       {error && <div className="error-message">{error}</div>}
 
-      <div className="customers-table-container">
-        <table className="customers-table">
-          <thead>
-            <tr>
-              <th onClick={() => handleSort('fullName')}>
-                الاسم الكامل {getSortIcon('fullName')}
-              </th>
-              <th onClick={() => handleSort('userName')}>
-                رقم الهاتف {getSortIcon('userName')}
-              </th>
-              <th onClick={() => handleSort('email')}>
-                البريد الإلكتروني {getSortIcon('email')}
-              </th>
-              <th onClick={() => handleSort('status')}>
-                الحالة {getSortIcon('status')}
-              </th>
-              <th>المدينة</th>
-              <th>عدد الحجوزات</th>
-              <th>إجمالي الإنفاق</th>
-              <th onClick={() => handleSort('createdAt')}>
-                تاريخ الإنشاء {getSortIcon('createdAt')}
-              </th>
-              <th>الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {customers.map(customer => (
-              <tr key={customer.id}>
-                <td>
-                  <div className="customer-info">
-                    {getImageUrl(customer.profileImage) ? (
-                      <img 
-                        src={getImageUrl(customer.profileImage)} 
-                        alt={customer.fullName}
-                        className="customer-avatar"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    {(!getImageUrl(customer.profileImage) || !customer.profileImage) && (
-                      <div className="customer-avatar-placeholder">
-                        <FontAwesomeIcon icon={faUser} />
-                      </div>
-                    )}
-                    <span>{customer.fullName}</span>
-                  </div>
-                </td>
-                <td>{customer.userName}</td>
-                <td>{customer.email}</td>
-                <td>
-                  <div className="status-toggle">
-                    <input
-                      type="checkbox"
-                      id={`status-${customer.id}`}
-                      className="status-toggle-input"
-                      checked={customer.status === 'Active'}
-                      onChange={(e) => {
-                        const newStatus = e.target.checked ? 'Active' : 'Suspended';
-                        handleStatusChange(customer.id, newStatus);
-                      }}
-                    />
-                    <label htmlFor={`status-${customer.id}`} className="status-toggle-label">
-                      <span className="status-toggle-slider"></span>
-                      <span className="status-toggle-text">
-                        {customer.status === 'Active' ? 'نشط' : 'معلق'}
-                      </span>
-                    </label>
-                  </div>
-                </td>
-                <td>{customer.cityName}</td>
-                <td>{customer.bookingsCount}</td>
-                <td>{customer.totalSpent?.toFixed(2) || '0'} ريال</td>
-                <td>{formatDate(customer.createdAt)}</td>
-                <td>
-                  <div className="categories-action-buttons">
-                    <button 
-                      className="categories-btn-action categories-btn-view"
-                      onClick={() => onViewCustomer(customer.id)}
-                      title="عرض التفاصيل"
-                    >
-                      <FontAwesomeIcon icon={faEye} />
-                    </button>
-                    <button 
-                      className="categories-btn-action categories-btn-edit"
-                      onClick={() => onEditCustomer(customer.id)}
-                      title="تعديل"
-                    >
-                      <FontAwesomeIcon icon={faEdit} />
-                    </button>
-                    <button 
-                      className="categories-btn-action categories-btn-delete"
-                      onClick={() => showDeleteConfirmModal(customer.id, customer.fullName)}
-                      title="حذف"
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <CustomTable
+        columns={columns}
+        data={customers}
+        loading={loading}
+        sortBy={filters.sortBy}
+        sortOrder={filters.sortOrder}
+        onSort={handleSort}
+        pagination={{
+          currentPage: pagination.currentPage,
+          totalPages: pagination.totalPages,
+          onPageChange: handlePageChange
+        }}
+        noDataMessage="لا توجد بيانات لعرضها"
+        renderActions={(customer) => (
+          <div className="categories-action-buttons">
+            <button
+              className="categories-btn-action categories-btn-view"
+              onClick={() => onViewCustomer(customer.id)}
+              title="عرض التفاصيل"
+            >
+              <FontAwesomeIcon icon={faEye} />
+            </button>
+            <button
+              className="categories-btn-action categories-btn-edit"
+              onClick={() => onEditCustomer(customer.id)}
+              title="تعديل"
+            >
+              <FontAwesomeIcon icon={faEdit} />
+            </button>
+            <button
+              className="categories-btn-action categories-btn-delete"
+              onClick={() =>
+                showDeleteConfirmModal(customer.id, customer.fullName)
+              }
+              title="حذف"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          </div>
+        )}
+      />
 
-      {customers.length === 0 && !loading && (
-        <div className="no-data">
-          <p>لا توجد عملاء للعرض</p>
-        </div>
-      )}
-
-      {pagination.totalPages > 1 && (
-        <div className="pagination">
-          <button 
-            className="btn-page"
-            disabled={pagination.currentPage === 1}
-            onClick={() => handlePageChange(pagination.currentPage - 1)}
-          >
-            السابق
-          </button>
-          {
-            getPaginationRange().map((page, idx) =>
-              page === '...'
-                ? <span key={`ellipsis-${idx}`} className="pagination-ellipsis">...</span>
-                : <button
-                    key={page}
-                    className={`btn-page ${page === pagination.currentPage ? 'active' : ''}`}
-                    onClick={() => handlePageChange(page)}
-                  >
-                    {page}
-                  </button>
-            )
-          }
-          <button 
-            className="btn-page"
-            disabled={pagination.currentPage === pagination.totalPages}
-            onClick={() => handlePageChange(pagination.currentPage + 1)}
-          >
-            التالي
-          </button>
-        </div>
-      )}
-
-      <SuccessModal 
+      <SuccessModal
         message={successModal.message}
         isVisible={successModal.isVisible}
         onClose={closeSuccessModal}

@@ -141,8 +141,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .search-box input {
@@ -175,6 +180,72 @@
   font-weight: 500;
   color: #333;
 }
+
+/* keep container + position rules the same */
+.city-search-input,
+.category-search-input {
+  position: relative;
+}
+
+/* space: chevron on LEFT, clear (×) on RIGHT */
+.city-search-input input,
+.category-search-input input {
+  padding-inline-start: 36px;
+  /* clear button (right in RTL) */
+  padding-inline-end: 32px;
+  /* chevron (left in RTL) */
+}
+
+/* move chevron to LEFT (inline-end in RTL) */
+.city-search-input::after,
+.category-search-input::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 10px;
+  /* ⬅️ left in RTL */
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 7px solid #9ca3af;
+  transition: transform .2s ease, border-top-color .2s ease;
+  pointer-events: none;
+}
+
+/* rotate when dropdown is open */
+.city-search-container.open .city-search-input::after,
+.category-search-container.open .category-search-input::after {
+  transform: translateY(-50%) rotate(180deg);
+  border-top-color: #374151;
+  cursor: pointer;
+}
+
+/* move clear (×) to RIGHT (inline-start in RTL) */
+.city-clear-btn,
+.category-clear-btn {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 8px;
+  /* ➜ right in RTL */
+  transform: translateY(-50%);
+  background: transparent;
+  border: 0;
+  font-size: 18px;
+  color: #9ca3af;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.city-clear-btn:hover,
+.category-clear-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
 
 .filter-group select {
   padding: 12px 16px;
@@ -284,42 +355,6 @@
   color: #6c757d;
   text-align: center;
   font-style: italic;
-}
-
-.trips-table-container {
-  width: 100%;
-  overflow-x: auto;
-  margin-top: 24px;
-}
-
-.trips-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(31,193,222,0.04);
-}
-
-.trips-table th, .trips-table td {
-  padding: 12px 16px;
-  text-align: right;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 14px;
-}
-
-.trips-table th {
-  background: #f8f9fa;
-  color: #1fc1de;
-  font-weight: 700;
-}
-
-.trips-table tr:last-child td {
-  border-bottom: none;
-}
-
-.trips-table tr:hover {
-  background: #f0fdfd;
 }
 
 .trip-info {
@@ -434,11 +469,11 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.status-toggle-input:checked + .status-toggle-label .status-toggle-slider {
+.status-toggle-input:checked+.status-toggle-label .status-toggle-slider {
   background: #10b981;
 }
 
-.status-toggle-input:checked + .status-toggle-label .status-toggle-slider:before {
+.status-toggle-input:checked+.status-toggle-label .status-toggle-slider:before {
   transform: translateX(-20px);
 }
 
@@ -593,8 +628,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .trip-id {
@@ -691,7 +731,7 @@
     height: 28px;
     font-size: 10px;
   }
-} 
+}
 
 /* Custom Scrollbar for Dropdowns */
 .trip-dropdown::-webkit-scrollbar,
@@ -1083,10 +1123,13 @@
 
 /* Search animations */
 @keyframes searchPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.5;
     transform: scale(1.05);
@@ -1103,41 +1146,41 @@
   .reorder-modal-overlay {
     padding: 10px;
   }
-  
+
   .reorder-modal {
     max-height: 95vh;
   }
-  
+
   .reorder-modal-header,
   .reorder-modal-search,
   .reorder-modal-content,
   .reorder-modal-actions {
     padding: 15px 20px;
   }
-  
+
   .reorder-grid {
     grid-template-columns: 1fr;
     gap: 15px;
   }
-  
+
   .reorder-trip-card {
     padding: 15px;
     gap: 12px;
   }
-  
+
   .reorder-trip-image {
     width: 60px;
     height: 60px;
   }
-  
+
   .reorder-trip-info h4 {
     font-size: 14px;
   }
-  
+
   .reorder-trip-info p {
     font-size: 12px;
   }
-  
+
   .reorder-modal-actions {
     flex-direction: column;
   }
@@ -1145,8 +1188,13 @@
 
 /* Animation for drag and drop */
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Drag preview styles */
@@ -1159,4 +1207,4 @@
   border-color: #1fc1de;
   background: #f0f9ff;
   transform: scale(1.05);
-} 
+}

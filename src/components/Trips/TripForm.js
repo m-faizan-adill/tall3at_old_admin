@@ -1,30 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faArrowRight, 
-  faSave, 
-  faTimes, 
+import {
+  faArrowRight,
+  faSave,
+  faTimes,
   faUpload,
   faSpinner,
-  faCamera,
-  faCheckCircle,
-  faExclamationTriangle,
   faPlus,
   faTrash,
-  faMapMarkerAlt,
-  faTag,
-  faMoneyBillWave,
-  faUsers,
-  faClock,
-  faCalendarAlt,
   faBox,
-  faGift,
-  faShieldAlt
 } from '@fortawesome/free-solid-svg-icons';
 import api from '../../services/api';
 import { API_CONFIG } from '../../constants/config';
 import ShimmerLoading from '../ShimmerLoading';
 import SuccessModal from '../SuccessModal';
+import Select from "react-select";
 import './TripForm.css';
 
 // Utility function to get full image URL
@@ -47,11 +37,15 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
     availableTo: '6:00 PM',
     minBookingHours: 1,
     maxPersons: 10,
-    featured: false,
+    featured: 0,
     order: 0
   });
-  const [imageFiles, setImageFiles] = useState([]);
-  const [imagePreviews, setImagePreviews] = useState([]);
+  // const [imageFiles, setImageFiles] = useState([]);
+  // const [imagePreviews, setImagePreviews] = useState([]);
+
+  const [imageItems, setImageItems] = useState([]);
+
+
   const [options, setOptions] = useState([]);
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -65,12 +59,23 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
   const [categorySearch, setCategorySearch] = useState('');
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const dragFrom = React.useRef(null);
+  const dragTo = React.useRef(null);
+
+  const [selectedProvider, setSelectedProvider] = useState(null);
+
+  const [providers, setProviders] = useState([]);
+  // console.log("providers:____ ", providers)
+  const [reordered, setReordered] = useState(false);
+
+  // console.log("providers detaills information: ", providers)
 
   const isEditing = !!tripId;
 
   useEffect(() => {
     fetchCities();
     fetchCategories();
+    fetchProviders();
     if (tripId) {
       fetchTrip();
     }
@@ -81,7 +86,7 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
     const handleClickOutside = (event) => {
       const cityContainer = document.querySelector('.city-search-container');
       const categoryContainer = document.querySelector('.category-search-container');
-      
+
       if (cityContainer && !cityContainer.contains(event.target)) {
         setShowCityDropdown(false);
       }
@@ -133,11 +138,22 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      // console.log("trip form fetch: ", response.data)
       const trip = response.data;
-      
+      console.log("this is the trip details: ", trip)
+
+      if (trip.providerId) {
+        // console.log("providers in trip: ", trip.providers)
+        setSelectedProvider(trip.providerId)
+      }
+
+
+
       setFormData({
         cityId: trip.cityId?.toString() || '',
         categoryId: trip.categoryId?.toString() || '',
+        // providerId: trip.providers?.providerId || '', //added tthis
         title: trip.title || '',
         titleEn: trip.titleEn || '',
         description: trip.description || '',
@@ -146,20 +162,28 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
         availableTo: trip.availableTo || '6:00 PM',
         minBookingHours: trip.minBookingHours || 1,
         maxPersons: trip.maxPersons || 10,
-        featured: trip.featured || false,
+        featured: trip.featured ? 1 : 0,
         order: trip.order || 0
       });
 
       // Set city and category search values
-      const city = cities.find(c => c.id === trip.cityId);
-      const category = categories.find(c => c.id === trip.categoryId);
-      if (city) setCitySearch(city.name);
-      if (category) setCategorySearch(category.name);
+      // const city = cities.find(c => c.id === trip.cityId);
+      // const category = categories.find(c => c.id === trip.categoryId);
 
-      // Set image previews
+      setCitySearch(trip.cityName || '');
+      setCategorySearch(trip.categoryName || '');
+
       if (trip.images) {
-        const imageUrls = trip.images.split(',').filter(img => img.trim());
-        setImagePreviews(imageUrls.map(img => getImageUrl(img)));
+
+        const urls = trip.images.split(',').map(s => s.trim()).filter(Boolean);
+        setImageItems(urls.map(u => ({
+          id: `ex-${u}`,
+          type: 'existing',
+          preview: getImageUrl(u),
+          url: u
+        })));
+      } else {
+        setImageItems([])
       }
 
       // Set service options
@@ -169,6 +193,8 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
           name: option.name,
           nameEn: option.nameEn || '',
           price: option.price?.toString() || '',
+          originalPrice: option.price?.toString() || '', // add this
+
           stock: option.stock?.toString() || ''
         })));
       }
@@ -178,14 +204,16 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
         setPackages(trip.packages.map(pkg => ({
           id: pkg.id,
           cost: pkg.cost?.toString() || '',
+          originalCost: pkg.cost?.toString() || '',  // add this
           unit: pkg.unit || '',
           minCount: pkg.minCount || 1,
           maxCount: pkg.maxCount || 1,
           numberOfHours: pkg.numberOfHours || 1,
           notes: pkg.notes || '',
-          featured: pkg.featured || false
+          featured: pkg.featured ? 1 : 0
         })));
       }
+
 
       setError(null);
     } catch (err) {
@@ -193,6 +221,34 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
       console.error('Error fetching trip:', err);
     } finally {
       setInitialLoading(false);
+    }
+  };
+
+  const fetchProviders = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await api.get('/api/admin/trips/providers/details?page=1&pageSize=100', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Fetched providers:", response.data);
+
+      // if (response.data && response.data.data) {
+      //   setProviders(response.data.data); // ✅ API me providers "data" key ke andar aa rahe hain
+      // }
+      if (response.data && response.data.data) {
+        const formatted = response.data.data.map((p) => ({
+          value: p.id,
+          label: `${p.fullName} | ${p.phoneNumber}`,
+        }));
+
+        // console.log("formatted providers: ", formatted)
+        setProviders(formatted);
+      }
+    } catch (err) {
+      console.error('Error fetching providers:', err);
     }
   };
 
@@ -206,36 +262,37 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
-    // Validate files
-    for (const file of files) {
-      if (file.size > 5 * 1024 * 1024) {
-        setError('حجم الملف كبير جداً. الحد الأقصى 5 ميجابايت');
-        return;
-      }
 
-      if (!file.type.startsWith('image/')) {
-        setError('يرجى اختيار ملفات صور صحيحة');
-        return;
-      }
-    }
+    const newItems = files.map((file) => ({
+      id: `new-${Date.now()}-${file.name}`,
+      type: 'new',
+      preview: URL.createObjectURL(file),
+      file
+    }));
 
-    setImageFiles(prev => [...prev, ...files]);
-    
-    // Create previews
-    const newPreviews = files.map(file => URL.createObjectURL(file));
-    setImagePreviews(prev => [...prev, ...newPreviews]);
+    setImageItems(prev => [...prev, ...newItems]);
     setError(null);
   };
 
   const removeImage = (index) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setImageItems(prev => {
+      const item = prev[index];
+      // memory cleanup for object URLs
+      if (item?.type === 'new' && item.preview?.startsWith('blob:')) {
+        URL.revokeObjectURL(item.preview);
+      }
+      const copy = [...prev];
+      copy.splice(index, 1);
+      return copy;
+    });
   };
+
 
   const addOption = () => {
     setOptions(prev => [...prev, {
-      id: Date.now(),
+      // id: Date.now(),
+      id: 'new-' + Date.now(),
+
       name: '',
       nameEn: '',
       price: '',
@@ -244,37 +301,99 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
   };
 
   const updateOption = (index, field, value) => {
-    setOptions(prev => prev.map((option, i) => 
+    setOptions(prev => prev.map((option, i) =>
       i === index ? { ...option, [field]: value } : option
     ));
   };
 
-  const removeOption = (index) => {
-    setOptions(prev => prev.filter((_, i) => i !== index));
+  const removeOption = async (optionId) => {
+    try {
+      if (typeof optionId === "number") {
+        const token = localStorage.getItem("token");
+        await api.delete(`/api/admin/trips/options/${optionId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+
+      // Update frontend state to remove option locally
+      setOptions((prev) => prev.filter((opt) => opt.id !== optionId));
+    } catch (error) {
+      console.error("Failed to delete option:", error);
+      alert("Failed to delete option. Please try again.");
+    }
   };
 
   const addPackage = () => {
     setPackages(prev => [...prev, {
-      id: Date.now(),
+      // id: Date.now(),
+      id: 'new-' + Date.now(),
       cost: '',
       unit: '',
       minCount: 1,
       maxCount: 1,
       numberOfHours: 1,
       notes: '',
-      featured: false
+      featured: 0 || false
     }]);
   };
 
   const updatePackage = (index, field, value) => {
-    setPackages(prev => prev.map((pkg, i) => 
+    setPackages(prev => prev.map((pkg, i) =>
       i === index ? { ...pkg, [field]: value } : pkg
     ));
   };
 
-  const removePackage = (index) => {
-    setPackages(prev => prev.filter((_, i) => i !== index));
+  const removePackage = async (index) => {
+    const pkg = packages[index];
+    // console.log('Removing package:', pkg);
+    if (pkg.id && typeof pkg.id === 'number') {
+      try {
+        const token = localStorage.getItem('token');
+        await api.delete(`/api/trips/no-booking/packages/${pkg.id}`, {
+
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        // Agar delete successful ho to state update karein
+        setPackages(prev => prev.filter((_, i) => i !== index));
+      } catch (err) {
+        console.error('Error details:', err);
+        console.error('Error response:', err.response);
+
+        let errorMessage = 'حدث خطأ أثناء حفظ الرحلة'; // default
+
+        // ✅ Pehle backend ka "message" field check karo
+        if (err.response?.data?.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.response?.status === 400 && err.response.data?.errors) {
+          const errors = err.response.data.errors;
+          const firstKey = Object.keys(errors)[0];
+          const firstError = errors[firstKey];
+          if (Array.isArray(firstError)) {
+            errorMessage = firstError[0];
+          } else if (typeof firstError === 'string') {
+            errorMessage = firstError;
+          }
+        } else if (typeof err.response?.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+
+    } else {
+      // Agar package abhi server pe nahi hai (naya package), toh sirf state se hata dein
+      setPackages(prev => prev.filter((_, i) => i !== index));
+    }
   };
+
 
   const validateForm = () => {
     if (!formData.title.trim()) {
@@ -289,16 +408,99 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
       setError('يرجى اختيار الفئة');
       return false;
     }
-    if (imageFiles.length === 0 && imagePreviews.length === 0) {
+
+    if (imageItems.length === 0) {
       setError('يرجى اختيار صورة واحدة على الأقل');
       return false;
     }
+
+
+    // ✅ Provider required only on create
+    if (!isEditing && !selectedProvider) {
+      setError('يرجى اختيار المزود');
+      return false;
+    }
+
+    // ✅ Packages must exist only for create mode
+    if (!isEditing && packages.length === 0) {
+      setError('يرجى إضافة باقة واحدة على الأقل');
+      return false;
+    }
+
+    // ✅ Availability required (both create & update)
+    if (!formData.availableFrom) {
+      setError('يرجى تحديد وقت البداية');
+      return false;
+    }
+    if (!formData.availableTo) {
+      setError('يرجى تحديد وقت النهاية');
+      return false;
+    }
+
     return true;
   };
 
+  // --- image upload helpers (INSIDE TripForm, before handleSubmit) ---
+  const urlToFile = async (url, filenameHint = 'reupload.jpg') => {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const name = filenameHint || 'reupload.jpg';
+    return new File([blob], name, { type: blob.type || 'image/jpeg' });
+  };
+
+  const appendImagesToFormData = async (fd, isEditing) => {
+    const desired = imageItems;
+
+    // sabhi existing images ki list preserve karo (order me)
+    const existingList = desired
+      .filter(i => i.type === 'existing')
+      .map(i => i.url);
+
+    // nayi files
+    const uploadFiles = desired
+      .filter(i => i.type === 'new')
+      .map(i => i.file);
+
+    if (isEditing) {
+      // ✅ Update Trip
+      fd.append('existingImages', existingList.join(','));
+      for (const f of uploadFiles) {
+        fd.append('images', f);
+      }
+
+      // Agar reorder-only case ho (sirf existing hain, koi new nahi)
+      if (uploadFiles.length === 0 && desired.length > 0 && reordered) {
+        const pick = desired.find(i => i.type === 'existing');
+        if (pick) {
+          const filename = (pick.url?.split('/').pop()) || 'reupload.jpg';
+          const f = await urlToFile(pick.url, filename);
+          fd.append('images', f);
+        }
+        setReordered(false)
+      }
+    } else {
+      // ✅ Create Trip
+      for (const f of uploadFiles) {
+        fd.append('ImageFiles', f);
+      }
+    }
+
+    console.groupCollapsed('[Images] FormData snapshot');
+    // console.log('existingImages:', existingList.join(','));
+    // uploadFiles.forEach((f, i) =>
+    //   console.log(`${isEditing ? 'images' : 'ImageFiles'}[${i}] -> ${f?.name} (${f?.size} bytes)`)
+    // );
+    console.groupEnd();
+  };
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
+    // console.log('handleSubmit called');
+    // console.log('isEditing:', isEditing);
+    // console.log('packages:', packages);
+
     if (!validateForm()) {
       return;
     }
@@ -309,6 +511,7 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
     try {
       const formDataToSend = new FormData();
       
+
       // Validate and convert data types
       const cityId = parseInt(formData.cityId);
       const categoryId = parseInt(formData.categoryId);
@@ -346,11 +549,12 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
         setLoading(false);
         return;
       }
-      
+
       // Basic trip data - match backend parameter names exactly
       formDataToSend.append('cityId', cityId);
       formDataToSend.append('categoryId', categoryId);
       formDataToSend.append('title', formData.title.trim());
+      formDataToSend.append('providerId', selectedProvider); //add this
       formDataToSend.append('titleEn', formData.titleEn.trim());
       formDataToSend.append('description', formData.description.trim());
       formDataToSend.append('descriptionEn', formData.descriptionEn.trim());
@@ -358,61 +562,122 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
       formDataToSend.append('availableTo', formData.availableTo);
       formDataToSend.append('minBookingHours', minBookingHours);
       formDataToSend.append('maxPersons', maxPersons);
-      formDataToSend.append('featured', formData.featured ? 'true' : 'false');
+      formDataToSend.append('featured', formData.featured == 1 ? 1 : 0);
+
       formDataToSend.append('order', order);
-      
-      // Images - backend expects 'images' field name
-      imageFiles.forEach(file => {
-        formDataToSend.append('images', file);
-      });
-      
-      // Options - backend expects List<CreateOptionRequest>, send as JSON stringified array of objects
+
+      await appendImagesToFormData(formDataToSend, isEditing);
+
+      //---------------000000
       if (options.length > 0) {
-        const optionsObjects = options.map(option => ({
-          name: option.name || '',
-          nameEn: option.nameEn || '',
-          price: parseFloat(option.price) || 0,
-          stock: parseInt(option.stock) || 0
-        }));
-        formDataToSend.append('options', JSON.stringify(optionsObjects));
+        if (isEditing) {
+          // ✅ Update Trip -> JSON stringify
+          const optionsObjects = options.map(option => {
+            const originalPriceNum = parseFloat(option.originalPrice) || 0;
+            const currentPriceNum = parseFloat(option.price) || 0;
+            let finalPrice = currentPriceNum;
+
+            // sirf tab commission add karo jab price change hui ho
+            if (currentPriceNum !== originalPriceNum) {
+              finalPrice = currentPriceNum * 1.15;
+            }
+
+            return {
+              id: option.id,
+              name: option.name || '',
+              nameEn: option.nameEn || '',
+              price: finalPrice,
+              stock: parseInt(option.stock) || 0
+            };
+          });
+          formDataToSend.append('options', JSON.stringify(optionsObjects));
+        } else {
+          // ✅ Create Trip -> indexed keys
+          options.forEach((option, i) => {
+            const basePrice = parseFloat(option.price) || 0;
+            const finalPrice = basePrice * 1.15; // new create par hamesha commission
+            formDataToSend.append(`Options[${i}].Name`, option.name || '');
+            formDataToSend.append(`Options[${i}].NameEn`, option.nameEn || '');
+            formDataToSend.append(`Options[${i}].Price`, finalPrice.toString());
+            formDataToSend.append(`Options[${i}].Stock`, (parseInt(option.stock) || 0).toString());
+          });
+        }
       }
 
-      // Packages - backend expects List<CreatePackageRequest>, send as JSON stringified array of objects
+      //both create and udpate packages
       if (packages.length > 0) {
-        const packagesObjects = packages.map(pkg => ({
-          cost: parseFloat(pkg.cost) || 0,
-          unit: pkg.unit || '',
-          minCount: parseInt(pkg.minCount) || 1,
-          maxCount: parseInt(pkg.maxCount) || 1,
-          numberOfHours: parseInt(pkg.numberOfHours) || 1,
-          notes: pkg.notes || ''
-        }));
-        formDataToSend.append('packages', JSON.stringify(packagesObjects));
+        if (isEditing) {
+          console.log('Appending packages for update:', packages);
+
+          // Update کے لیے: JSON stringify والا logic
+          const packagesObjects = packages.map(pkg => {
+            const originalCostNum = parseFloat(pkg.originalCost) || 0;
+            const currentCostNum = parseFloat(pkg.cost) || 0;
+            let finalCost = currentCostNum;
+            if (currentCostNum !== originalCostNum) {
+              finalCost = currentCostNum * 1.15; // 15% commission add
+            }
+            console.log("pkg featured: ",pkg.featured)
+            return {
+              id: pkg.id, // اگر موجود ہو
+              cost: finalCost,
+              unit: pkg.unit || '',
+              minCount: parseInt(pkg.minCount) || 1,
+              maxCount: parseInt(pkg.maxCount) || 1,
+              numberOfHours: parseInt(pkg.numberOfHours) || 1,
+              notes: pkg.notes || '',
+              featured: pkg.featured ? 1 : 0
+            };
+          });
+          formDataToSend.append('packages', JSON.stringify(packagesObjects));
+        } else {
+
+          // Create کے لیے: indexed keys والا logic
+          packages.forEach((pkg, i) => {
+            const originalCostNum = parseFloat(pkg.originalCost) || 0;
+            const currentCostNum = parseFloat(pkg.cost) || 0;
+            let finalCost = currentCostNum;
+            if (currentCostNum !== originalCostNum) {
+              finalCost = currentCostNum * 1.15; // 15% commission add
+            }
+            formDataToSend.append(`Packages[${i}].Cost`, finalCost.toString());
+            formDataToSend.append(`Packages[${i}].Unit`, pkg.unit || '');
+            formDataToSend.append(`Packages[${i}].NumberOfHours`, (parseInt(pkg.numberOfHours) || 1).toString());
+            formDataToSend.append(`Packages[${i}].MinCount`, (parseInt(pkg.minCount) || 1).toString());
+            formDataToSend.append(`Packages[${i}].MaxCount`, (parseInt(pkg.maxCount) || 1).toString());
+            if (pkg.notes) {
+              formDataToSend.append(`Packages[${i}].Notes`, pkg.notes);
+            }
+            formDataToSend.append(`Packages[${i}].Featured`, pkg.featured ? 1 : 0);
+          });
+                    console.log('Appending packages for create:', packages,packages.featured);
+
+
+          // console.log(formDataToSend)
+        }
       }
+
+
 
       // Debug: Log the form data being sent
-      console.log('=== TRIP FORM DATA BEING SENT ===');
-      console.log('Basic Form Data:');
-      console.log('- cityId:', cityId);
-      console.log('- categoryId:', categoryId);
-      console.log('- title:', formData.title.trim());
-      console.log('- titleEn:', formData.titleEn.trim());
-      console.log('- description:', formData.description.trim());
-      console.log('- descriptionEn:', formData.descriptionEn.trim());
-      console.log('- availableFrom:', formData.availableFrom);
-      console.log('- availableTo:', formData.availableTo);
-      console.log('- minBookingHours:', minBookingHours);
-      console.log('- maxPersons:', maxPersons);
-      console.log('- featured:', formData.featured ? 'true' : 'false');
-      console.log('- order:', order);
-      
-      console.log('\nImages:');
-      console.log('- Number of image files:', imageFiles.length);
-      imageFiles.forEach((file, index) => {
-        console.log(`  Image ${index + 1}:`, file.name, `(${file.size} bytes)`);
-      });
-      
-      console.log('\nOptions:');
+      // console.log('=== TRIP FORM DATA BEING SENT ===');
+      // console.log('Basic Form Data:');
+      // console.log('- cityId:', cityId);
+      // console.log('- categoryId:', categoryId);
+      // console.log('- title:', formData.title.trim());
+      // console.log('- titleEn:', formData.titleEn.trim());
+      // console.log('- description:', formData.description.trim());
+      // console.log('- descriptionEn:', formData.descriptionEn.trim());
+      // console.log('- availableFrom:', formData.availableFrom);
+      // console.log('- availableTo:', formData.availableTo);
+      // console.log('- minBookingHours:', minBookingHours);
+      // console.log('- maxPersons:', maxPersons);
+      console.log('- featured:', formData.featured ? 1 : 0);
+      // console.log('- order:', order);
+
+      // console.log('\nImages:');
+
+      // console.log('\nOptions:');
       if (options.length > 0) {
         const optionsObjects = options.map(option => ({
           name: option.name || '',
@@ -420,44 +685,45 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
           price: parseFloat(option.price) || 0,
           stock: parseInt(option.stock) || 0
         }));
-        console.log('- Options objects:', optionsObjects);
-        console.log('- Options JSON:', JSON.stringify(optionsObjects));
+        // console.log('- Options objects:', optionsObjects);
+        // console.log('- Options JSON:', JSON.stringify(optionsObjects));
       } else {
         console.log('- No options');
       }
-      
-      console.log('\nPackages:');
-      if (packages.length > 0) {
-        const packagesObjects = packages.map(pkg => ({
-          cost: parseFloat(pkg.cost) || 0,
-          unit: pkg.unit || '',
-          minCount: parseInt(pkg.minCount) || 1,
-          maxCount: parseInt(pkg.maxCount) || 1,
-          numberOfHours: parseInt(pkg.numberOfHours) || 1,
-          notes: pkg.notes || ''
-        }));
-        console.log('- Packages objects:', packagesObjects);
-        console.log('- Packages JSON:', JSON.stringify(packagesObjects));
-      } else {
-        console.log('- No packages');
-      }
-      
-      console.log('\nFormData entries:');
-      for (let [key, value] of formDataToSend.entries()) {
-        console.log(`${key}:`, value);
-      }
-      console.log('=== END FORM DATA ===');
+
+      // console.log('\nPackages:');
+      // if (packages.length > 0) {
+      //   const packagesObjects = packages.map(pkg => ({
+      //     cost: parseFloat(pkg.cost) || 0,
+      //     unit: pkg.unit || '',
+      //     minCount: parseInt(pkg.minCount) || 1,
+      //     maxCount: parseInt(pkg.maxCount) || 1,
+      //     numberOfHours: parseInt(pkg.numberOfHours) || 1,
+      //     notes: pkg.notes || '',
+      //     featured: pkg.featured ? 'true' : 'false'
+      //   }));
+      //   // console.log('- Packages objects:', packagesObjects);
+      //   console.log('- Packages JSON:', JSON.stringify(packagesObjects));
+      // } else {
+      //   console.log('- No packages');
+      // }
+
+      // console.log('\nFormData entries:');
+      // for (let [key, value] of formDataToSend.entries()) {
+      //   console.log(`${key}:`, value);
+      // }
+      // console.log('=== END FORM DATA ===');
 
       if (isEditing) {
         const token = localStorage.getItem('token');
-        console.log('=== UPDATE TRIP REQUEST ===');
-        console.log('Trip ID:', tripId);
-        console.log('API endpoint:', `/api/trips/${tripId}`);
-        console.log('Token:', token ? `${token.substring(0, 20)}...` : 'No token found');
-        console.log('Request headers:', {
-          'Authorization': `Bearer ${token ? token.substring(0, 20) + '...' : 'No token'}`
-        });
-        
+        // console.log('=== UPDATE TRIP REQUEST ===');
+        // console.log('Trip ID:', tripId);
+        // console.log('API endpoint:', `/api/trips/${tripId}`);
+        // console.log('Token:', token ? `${token.substring(0, 20)}...` : 'No token found');
+        // console.log('Request headers:', {
+        //   'Authorization': `Bearer ${token ? token.substring(0, 20) + '...' : 'No token'}`
+        // });
+
         const response = await api.put(`/api/trips/${tripId}`, formDataToSend, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -465,28 +731,29 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
           }
         });
         console.log('Update response status:', response.status);
-        console.log('Update response data:', response.data);
+        // console.log('Update response data:', response.data);
         setSuccessMessage('تم تحديث الرحلة بنجاح');
       } else {
         const token = localStorage.getItem('token');
-        console.log('=== CREATE TRIP REQUEST ===');
-        console.log('API endpoint:', '/api/trips');
-        console.log('Token:', token ? `${token.substring(0, 20)}...` : 'No token found');
-        console.log('Request headers:', {
-          'Authorization': `Bearer ${token ? token.substring(0, 20) + '...' : 'No token'}`
-        });
-        
+        // console.log('=== CREATE TRIP REQUEST ===');
+        // console.log('API endpoint:', '/api/trips');
+        // console.log('Token:', token ? `${token.substring(0, 20)}...` : 'No token found');
+        // console.log('Request headers:', {
+          // 'Authorization': `Bearer ${token ? token.substring(0, 20) + '...' : 'No token'}`
+        // });
+
         const response = await api.post('/api/trips', formDataToSend, {
           headers: {
             'Authorization': `Bearer ${token}`,
             // Don't set Content-Type for FormData, let the browser set it with boundary
           }
         });
+        console.log("response: ", response)
         console.log('Create response status:', response.status);
         console.log('Create response data:', response.data);
         setSuccessMessage('تم إنشاء الرحلة بنجاح');
       }
-      
+
       setShowSuccessModal(true);
       setTimeout(() => {
         if (onSuccess) {
@@ -494,13 +761,25 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
         }
       }, 2000);
     } catch (err) {
+
       console.error('Error details:', err);
       console.error('Error response:', err.response);
-      
+
       // Handle different error response formats
       let errorMessage = 'حدث خطأ أثناء حفظ الرحلة';
-      
-      if (err.response?.data) {
+
+      // ✅ Extra: agar 400 Bad Request aaye to directly validation error show karo
+      if (err.response?.status === 400 && err.response.data?.errors) {
+        const errors = err.response.data.errors;
+        const firstKey = Object.keys(errors)[0];
+        const firstError = errors[firstKey];
+
+        if (Array.isArray(firstError)) {
+          errorMessage = firstError[0];
+        } else if (typeof firstError === 'string') {
+          errorMessage = firstError;
+        }
+      } else if (err.response?.data) {
         if (typeof err.response.data === 'string') {
           errorMessage = err.response.data;
         } else if (err.response.data.message) {
@@ -508,14 +787,11 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
         } else if (err.response.data.title) {
           errorMessage = err.response.data.title;
         } else if (typeof err.response.data === 'object') {
-          // If it's an object, try to extract meaningful error info
           const errorObj = err.response.data;
           if (errorObj.errors && typeof errorObj.errors === 'object') {
-            // Handle validation errors
             const errorKeys = Object.keys(errorObj.errors);
             if (errorKeys.length > 0) {
               const firstError = errorObj.errors[errorKeys[0]];
-              // Ensure we get a string, even if the error is an object
               if (typeof firstError === 'string') {
                 errorMessage = firstError;
               } else if (typeof firstError === 'object' && firstError.message) {
@@ -527,14 +803,13 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
               }
             }
           } else {
-            // Convert object to string for display
             errorMessage = JSON.stringify(errorObj);
           }
         }
       } else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -542,11 +817,11 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
   };
 
   // Filter cities and categories based on search
-  const filteredCities = cities.filter(city => 
+  const filteredCities = cities.filter(city =>
     city.name.toLowerCase().includes(citySearch.toLowerCase())
   );
 
-  const filteredCategories = categories.filter(category => 
+  const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(categorySearch.toLowerCase())
   );
 
@@ -594,6 +869,36 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
     );
   }
 
+
+
+  const onDragStart = (index) => () => { dragFrom.current = index; };
+  const onDragEnter = (index) => (e) => { e.preventDefault(); dragTo.current = index; };
+  const onDragOver = (e) => e.preventDefault();
+  const onDragEnd = () => {
+    const from = dragFrom.current;
+    const to = dragTo.current;
+    dragFrom.current = dragTo.current = null;
+    if (from == null || to == null || from === to) return;
+
+    setImageItems(prev => {
+      const arr = [...prev];
+      const [moved] = arr.splice(from, 1);
+      arr.splice(to, 0, moved);
+
+      console.groupCollapsed('[Images] Reordered by drag');
+      console.table(arr.map((it, idx) => ({
+        idx,
+        type: it.type,
+        name: it.file?.name || it.url
+      })));
+      setReordered(true);
+      console.groupEnd();
+
+      return arr;
+    });
+  };
+
+
   return (
     <div className="trip-form">
       <div className="trip-form-header">
@@ -616,6 +921,9 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
           <div className="trip-form-section">
             <h3>معلومات الرحلة الأساسية</h3>
             <div className="trip-form-grid">
+
+
+
               <div className="trip-form-group">
                 <label htmlFor="title">عنوان الرحلة *</label>
                 <input
@@ -683,7 +991,7 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
                     onChange={handleCitySearchChange}
                     onFocus={() => setShowCityDropdown(true)}
                   />
-                  <button 
+                  <button
                     type="button"
                     className="city-clear-btn"
                     onClick={() => {
@@ -696,7 +1004,7 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
                     ×
                   </button>
                 </div>
-                
+
                 {showCityDropdown && (
                   <div className="city-dropdown">
                     {filteredCities.length > 0 ? (
@@ -726,7 +1034,7 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
                     onChange={handleCategorySearchChange}
                     onFocus={() => setShowCategoryDropdown(true)}
                   />
-                  <button 
+                  <button
                     type="button"
                     className="category-clear-btn"
                     onClick={() => {
@@ -739,7 +1047,7 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
                     ×
                   </button>
                 </div>
-                
+
                 {showCategoryDropdown && (
                   <div className="category-dropdown">
                     {filteredCategories.length > 0 ? (
@@ -761,6 +1069,26 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
             </div>
           </div>
 
+
+          <div className="trip-form-section">
+            <h3>مقدم الخدمة</h3>
+            <div className="trip-form-group">
+
+              <Select
+                options={providers}
+                value={providers.find((p) => p.value === selectedProvider) || null}
+                onChange={(option) => setSelectedProvider(option?.value || "")}
+                placeholder="اختر المزود"
+                isSearchable={true}
+                isClearable={true}
+                filterOption={(option, input) =>
+                  (option?.label || "").toLowerCase().includes(input.toLowerCase())
+                }
+              />
+
+            </div>
+          </div>
+
           {/* Availability */}
           <div className="trip-form-section">
             <h3>أوقات التوفر</h3>
@@ -773,6 +1101,7 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
                   name="availableFrom"
                   value={formData.availableFrom}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
 
@@ -784,6 +1113,7 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
                   name="availableTo"
                   value={formData.availableTo}
                   onChange={handleInputChange}
+                  required
                 />
               </div>
             </div>
@@ -802,6 +1132,7 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
                   onChange={handleInputChange}
                   placeholder="أدخل وصف الرحلة بالعربية"
                   rows="4"
+                  required
                 />
               </div>
 
@@ -814,6 +1145,7 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
                   onChange={handleInputChange}
                   placeholder="Enter trip description in English"
                   rows="4"
+                  required
                 />
               </div>
             </div>
@@ -822,39 +1154,64 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
           {/* Images */}
           <div className="trip-form-section">
             <h3>صور الرحلة</h3>
+
+            {/* 🆕 Remove All Button */}
+            {imageItems.length > 0 && (
+              <button
+                type="button"
+                className="trip-remove-all-btn"
+                onClick={() => setImageItems([])}
+                style={{
+                  background: '#e74c3c',
+                  color: 'white',
+                  fontSize: '13px',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '7px 08px',
+                  cursor: 'pointer',
+                  marginBottom: '10px',
+                  alignSelf: 'flex-start'
+                }}
+              >
+                حذف جميع الصور
+              </button>
+            )}
             <div className="trip-images-upload">
+
               <div className="trip-images-preview">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="trip-image-preview-item">
-                    <img
-                      src={preview}
-                      alt={`Preview ${index + 1}`}
-                      className="trip-preview-image"
-                    />
-                    <button
-                      type="button"
-                      className="trip-remove-image-btn"
-                      onClick={() => removeImage(index)}
-                    >
+                {imageItems.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="trip-image-preview-item"
+                    draggable
+                    onDragStart={onDragStart(index)}
+                    onDragEnter={onDragEnter(index)}
+                    onDragOver={onDragOver}
+                    onDragEnd={onDragEnd}
+                    title="Drag to reorder"
+                  >
+
+                    {item.preview && (
+                      <img src={item.preview} alt={`Preview ${index + 1}`} className="trip-preview-image" />
+                    )}
+
+                    <button type="button" className="trip-remove-image-btn" onClick={() => removeImage(index)}>
                       <FontAwesomeIcon icon={faTimes} />
                     </button>
+                    <span className="trip-drag-handle">⋮⋮</span>
                   </div>
                 ))}
-                
-                <div 
-                  className="trip-upload-placeholder"
-                  onClick={() => fileInputRef.current?.click()}
-                  style={{ cursor: 'pointer' }}
-                >
+
+                <div className="trip-upload-placeholder" onClick={() => fileInputRef.current?.click()}>
                   <FontAwesomeIcon icon={faUpload} />
                   <p>اضغط لاختيار صور</p>
                   <span>يمكنك اختيار صور غير محدودة</span>
                 </div>
               </div>
+
               <input
                 ref={fileInputRef}
                 type="file"
-                id="trip-images"
                 accept="image/*"
                 multiple
                 onChange={handleImageChange}
@@ -878,6 +1235,7 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
                         value={option.name}
                         onChange={(e) => updateOption(index, 'name', e.target.value)}
                         placeholder="اسم الخدمة"
+                        required
                       />
                     </div>
                     <div className="trip-form-group">
@@ -913,14 +1271,14 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
                     <button
                       type="button"
                       className="trip-remove-option-btn"
-                      onClick={() => removeOption(index)}
+                      onClick={() => removeOption(option.id)}
                     >
                       <FontAwesomeIcon icon={faTrash} />
                     </button>
                   </div>
                 </div>
               ))}
-              
+
               <button
                 type="button"
                 className="trip-add-option-btn"
@@ -939,90 +1297,99 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
               باقات الرحلة
             </h3>
             <div className="trip-packages">
-              {packages.map((pkg, index) => (
-                <div key={pkg.id} className="trip-package-item">
-                  <div className="trip-package-grid">
-                    <div className="trip-form-group">
-                      <label>التكلفة</label>
-                      <input
-                        type="number"
-                        value={pkg.cost}
-                        onChange={(e) => updatePackage(index, 'cost', e.target.value)}
-                        placeholder="0.00"
-                        step="0.01"
-                        min="0"
-                      />
-                    </div>
-                    <div className="trip-form-group">
-                      <label>الوحدة</label>
-                      <input
-                        type="text"
-                        value={pkg.unit}
-                        onChange={(e) => updatePackage(index, 'unit', e.target.value)}
-                        placeholder="مثال: ساعة، يوم"
-                      />
-                    </div>
-                    <div className="trip-form-group">
-                      <label>عدد الساعات</label>
-                      <input
-                        type="number"
-                        value={pkg.numberOfHours}
-                        onChange={(e) => updatePackage(index, 'numberOfHours', e.target.value)}
-                        placeholder="1"
-                        min="1"
-                      />
-                    </div>
-                    <div className="trip-form-group">
-                      <label>الحد الأدنى للأشخاص</label>
-                      <input
-                        type="number"
-                        value={pkg.minCount}
-                        onChange={(e) => updatePackage(index, 'minCount', e.target.value)}
-                        placeholder="1"
-                        min="1"
-                      />
-                    </div>
-                    <div className="trip-form-group">
-                      <label>الحد الأقصى للأشخاص</label>
-                      <input
-                        type="number"
-                        value={pkg.maxCount}
-                        onChange={(e) => updatePackage(index, 'maxCount', e.target.value)}
-                        placeholder="1"
-                        min="1"
-                      />
-                    </div>
-                    <div className="trip-form-group">
-                      <label>ملاحظات</label>
-                      <textarea
-                        value={pkg.notes}
-                        onChange={(e) => updatePackage(index, 'notes', e.target.value)}
-                        placeholder="ملاحظات إضافية للباقة"
-                        rows="2"
-                      />
-                    </div>
-                    <div className="trip-form-group">
-                      <label className="trip-checkbox-label">
+
+
+              {packages.map((pkg, index) => {
+
+                return (
+                  <div key={pkg.id} className="trip-package-item">
+                    <div className="trip-package-grid">
+                      <div className="trip-form-group">
+                        <label>التكلفة</label>
                         <input
-                          type="checkbox"
-                          checked={pkg.featured}
-                          onChange={(e) => updatePackage(index, 'featured', e.target.checked)}
+                          type="number"
+                          value={pkg.cost}
+                          onChange={(e) => updatePackage(index, 'cost', e.target.value)}
+                          placeholder="0.00"
+                          step="0.01"
+                          min="1"
+                          required
                         />
-                        <span className="trip-checkmark"></span>
-                        باقة مميزة
-                      </label>
+
+                      </div>
+                      <div className="trip-form-group">
+                        <label>الوحدة</label>
+                        <input
+                          type="text"
+                          value={pkg.unit}
+                          onChange={(e) => updatePackage(index, 'unit', e.target.value)}
+                          placeholder="مثال: ساعة، يوم"
+                        />
+                      </div>
+                      <div className="trip-form-group">
+                        <label>عدد الساعات</label>
+                        <input
+                          type="number"
+                          value={pkg.numberOfHours}
+                          onChange={(e) => updatePackage(index, 'numberOfHours', e.target.value)}
+                          placeholder="1"
+                          min="1"
+                        />
+                      </div>
+                      <div className="trip-form-group">
+                        <label>الحد الأدنى للأشخاص</label>
+                        <input
+                          type="number"
+                          value={pkg.minCount}
+                          onChange={(e) => updatePackage(index, 'minCount', e.target.value)}
+                          placeholder="1"
+                          min="1"
+                        />
+                      </div>
+                      <div className="trip-form-group">
+                        <label>الحد الأقصى للأشخاص</label>
+                        <input
+                          type="number"
+                          value={pkg.maxCount}
+                          onChange={(e) => updatePackage(index, 'maxCount', e.target.value)}
+                          placeholder="1"
+                          min="1"
+                        />
+                      </div>
+                      <div className="trip-form-group">
+                        <label>ملاحظات</label>
+                        <textarea
+                          value={pkg.notes}
+                          onChange={(e) => updatePackage(index, 'notes', e.target.value)}
+                          placeholder="ملاحظات إضافية للباقة"
+                          rows="2"
+                        />
+                      </div>
+                      <div className="trip-form-group">
+                        <label className="trip-checkbox-label">
+                          <input
+                            type="checkbox"
+                            checked={pkg.featured}
+                            onChange={(e) => updatePackage(index, 'featured', e.target.checked)}
+                          />
+                          <span className="trip-checkmark"></span>
+                          باقة مميزة
+                        </label>
+                      </div>
+                      <button
+                        type="button"
+                        className="trip-remove-package-btn"
+                        onClick={() => removePackage(index)}
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      className="trip-remove-package-btn"
-                      onClick={() => removePackage(index)}
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
                   </div>
-                </div>
-              ))}
-              
+
+
+                )
+              })}
+
               <button
                 type="button"
                 className="trip-add-package-btn"
@@ -1095,7 +1462,7 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
             </button>
           </div>
         </form>
-      </div>
+      </div >
 
       <SuccessModal
         isVisible={showSuccessModal}
@@ -1104,7 +1471,7 @@ const TripForm = ({ tripId, onBack, onSuccess }) => {
           setShowSuccessModal(false);
         }}
       />
-    </div>
+    </div >
   );
 };
 

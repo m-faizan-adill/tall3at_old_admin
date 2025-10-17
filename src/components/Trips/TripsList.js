@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faEye, 
-  faEdit, 
-  faTrash, 
+import {
+  faEye,
+  faEdit,
+  faTrash,
   faPlus,
   faDownload,
   faPrint,
@@ -28,6 +28,8 @@ import { formatDate } from '../../utils/dateUtils';
 import SuccessModal from '../SuccessModal';
 import DeleteConfirmModal from '../DeleteConfirmModal';
 import './TripsList.css';
+import CustomTable from '../common/CustomTable';
+import { exportTripsListCSV, printTripsListPDF } from '../../utils/exportHelpers';
 
 // Utility function to get full image URL
 const getImageUrl = (imagePath) => {
@@ -84,13 +86,15 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
     fetchCities();
     fetchCategories();
   }, [pagination.currentPage, filters]);
+  const [exporting, setExporting] = useState(false);
+
 
   // Handle clicking outside dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
       const cityContainer = document.querySelector('.city-search-container');
       const categoryContainer = document.querySelector('.category-search-container');
-      
+
       if (cityContainer && !cityContainer.contains(event.target)) {
         setShowCityDropdown(false);
       }
@@ -108,7 +112,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
   const fetchTrips = async () => {
     try {
       setLoading(true);
-      
+
       // Build query parameters, only include non-empty values
       const queryParams = {
         page: pagination.currentPage,
@@ -133,13 +137,13 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
       }
 
       const params = new URLSearchParams(queryParams);
-      
+
       console.log('Search params:', queryParams); // Debug log
       console.log('URL params:', params.toString()); // Debug log
 
       const response = await api.get(`/api/admin/trips?${params}`);
-      console.log('API response:', response.data); // Debug log
-      
+      console.log('API response::', response.data); // Debug log
+
       setTrips(response.data.data);
       setPagination(prev => ({
         ...prev,
@@ -148,7 +152,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
       }));
     } catch (err) {
       console.error('Error fetching trips:', err);
-      console.error('Error response:', err.response?.data); // Log the error response
+      console.error('Error response:', err.response?.data);
       setError('فشل في تحميل بيانات الرحلات');
     } finally {
       setLoading(false);
@@ -203,8 +207,13 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
     try {
       const formData = new FormData();
       formData.append('status', newStatus);
-      
-      await api.put(`/api/admin/trips/${tripId}/status`, formData);
+      console.log('Updating status for trip:', tripId, 'to', newStatus);
+
+      const res = await api.put(`/api/admin/trips/${tripId}/status`, formData);
+      console.log('Status update response:', res.data);
+
+
+
       fetchTrips();
       showSuccessMessage('تم تحديث حالة الرحلة بنجاح');
     } catch (err) {
@@ -214,103 +223,9 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
   };
 
   const printTrips = () => {
-    try {
-      const printWindow = window.open('', '_blank');
-      const printContent = `
-        <!DOCTYPE html>
-        <html dir="rtl">
-        <head>
-          <title>قائمة الرحلات - طلعات</title>
-          <style>
-            body { 
-              font-family: 'Cairo', 'Tajawal', 'Noto Kufi Arabic', Arial, sans-serif; 
-              margin: 20px; 
-              direction: rtl;
-            }
-            .header { 
-              text-align: center; 
-              margin-bottom: 30px; 
-              border-bottom: 2px solid #1fc1de; 
-              padding-bottom: 20px;
-            }
-            .header h1 { 
-              color: #1fc1de; 
-              margin: 0; 
-              font-size: 24px;
-            }
-            .header p { 
-              color: #666; 
-              margin: 5px 0 0 0; 
-              font-size: 14px;
-            }
-            table { 
-              width: 100%; 
-              border-collapse: collapse; 
-              margin-top: 20px;
-              font-size: 12px;
-            }
-            th, td { 
-              border: 1px solid #ddd; 
-              padding: 8px; 
-              text-align: right;
-            }
-            th { 
-              background-color: #f8f9fa; 
-              font-weight: bold;
-              color: #1fc1de;
-            }
-            .status-active { color: #10b981; font-weight: bold; }
-            .status-pending { color: #f59e0b; font-weight: bold; }
-            .status-inactive { color: #ef4444; font-weight: bold; }
-            @media print {
-              body { margin: 0; }
-              .no-print { display: none; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>قائمة الرحلات</h1>
-            <p>تطبيق طلعات - ${new Date().toLocaleDateString('ar-SA')}</p>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>العنوان</th>
-                <th>المدينة</th>
-                <th>الفئة</th>
-                <th>الحالة</th>
-                <th>عدد الأشخاص</th>
-                <th>تاريخ الإنشاء</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${trips.map(trip => `
-                <tr>
-                  <td>${trip.title}</td>
-                  <td>${trip.cityName || 'غير محدد'}</td>
-                  <td>${trip.categoryName || 'غير محدد'}</td>
-                  <td class="status-${trip.status.toLowerCase()}">${getStatusText(trip.status)}</td>
-                  <td>${trip.maxPersons}</td>
-                  <td>${formatDate(trip.createdAt)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </body>
-        </html>
-      `;
-      
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
-    } catch (err) {
-      setError('فشل في طباعة البيانات');
-      console.error('Error printing trips:', err);
-    }
+    printTripsListPDF(trips, getStatusText, formatDate, setError);
   };
+
 
   const getStatusText = (status) => {
     const statusMap = {
@@ -328,40 +243,52 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
       fetchTrips();
       showSuccessMessage('تم حذف الرحلة بنجاح');
     } catch (err) {
-      setError('فشل في حذف الرحلة');
+      // setError('فشل في حذف الرحلة');
+      const validationError = err.response?.data?.message
+      const message = validationError || 'فشل في حذف الرحلة';
+      setError(message);
+      setTimeout(() => {
+        setError(null)
+      }, 4500)
     }
   };
 
+
+  //CSV
+  const exportTrips = async () => {
+    await exportTripsListCSV(filters, setError, setExporting);
+  }
+
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'Active': { 
-        class: 'status-active', 
+      'Active': {
+        class: 'status-active',
         text: 'نشط',
         icon: faCheckCircle
       },
-      'Pending': { 
-        class: 'status-pending', 
+      'Pending': {
+        class: 'status-pending',
         text: 'في الانتظار',
         icon: faClock
       },
-      'Inactive': { 
-        class: 'status-inactive', 
+      'Inactive': {
+        class: 'status-inactive',
         text: 'غير نشط',
         icon: faTimesCircle
       },
-      'Deleted': { 
-        class: 'status-deleted', 
+      'Deleted': {
+        class: 'status-deleted',
         text: 'محذوف',
         icon: faBan
       }
     };
-    
-    const config = statusConfig[status] || { 
-      class: 'status-default', 
+
+    const config = statusConfig[status] || {
+      class: 'status-default',
       text: status,
       icon: faBan
     };
-    
+
     return (
       <span className={`status-badge ${config.class}`}>
         <FontAwesomeIcon icon={config.icon} />
@@ -372,17 +299,17 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
 
   const getSortIcon = (field) => {
     if (filters.sortBy !== field) return <FontAwesomeIcon icon={faSort} />;
-    return filters.sortOrder === 'asc' ? 
-      <FontAwesomeIcon icon={faSortUp} /> : 
+    return filters.sortOrder === 'asc' ?
+      <FontAwesomeIcon icon={faSortUp} /> :
       <FontAwesomeIcon icon={faSortDown} />;
   };
 
   // Filter cities and categories based on search
-  const filteredCities = cities.filter(city => 
+  const filteredCities = cities.filter(city =>
     city.name.toLowerCase().includes(citySearch.toLowerCase())
   );
 
-  const filteredCategories = categories.filter(category => 
+  const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(categorySearch.toLowerCase())
   );
 
@@ -458,14 +385,14 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
   const openReorderModal = async () => {
     try {
       setReorderModal(prev => ({ ...prev, isVisible: true, loading: true }));
-      
+
       // Fetch all trips for reordering (without pagination)
       const response = await api.get('/api/admin/trips?pageSize=1000&sortBy=order&sortOrder=asc');
-      
+
       // Add safety checks for the response
       const tripsData = response?.data?.data || [];
       const validTrips = Array.isArray(tripsData) ? tripsData.filter(trip => trip && trip.id) : [];
-      
+
       setReorderModal(prev => ({
         ...prev,
         trips: validTrips,
@@ -473,10 +400,10 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
       }));
     } catch (err) {
       console.error('Error fetching trips for reorder:', err);
-      setReorderModal(prev => ({ 
-        ...prev, 
+      setReorderModal(prev => ({
+        ...prev,
         trips: [],
-        loading: false 
+        loading: false
       }));
       setError('فشل في تحميل الرحلات لإعادة الترتيب');
     }
@@ -501,7 +428,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
     const { trips, searchTerm } = reorderModal;
     if (!trips || !Array.isArray(trips)) return [];
     if (!searchTerm) return trips;
-    
+
     return trips.filter(trip => {
       if (!trip) return false;
       return (
@@ -528,36 +455,36 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
   const handleDrop = (e, targetTrip) => {
     e.preventDefault();
     console.log('Drop on:', targetTrip.id); // Debug log
-    
+
     if (!draggedTrip || draggedTrip.id === targetTrip.id) {
       console.log('Invalid drop - same trip or no dragged trip');
       return;
     }
-    
+
     const { trips } = reorderModal;
     const draggedIndex = trips.findIndex(t => t.id === draggedTrip.id);
     const targetIndex = trips.findIndex(t => t.id === targetTrip.id);
-    
+
     console.log('Dragged index:', draggedIndex, 'Target index:', targetIndex); // Debug log
-    
+
     if (draggedIndex === -1 || targetIndex === -1) {
       console.log('Invalid indices');
       return;
     }
-    
+
     // Create new array with reordered trips
     const newTrips = [...trips];
     const [removed] = newTrips.splice(draggedIndex, 1);
     newTrips.splice(targetIndex, 0, removed);
-    
+
     // Update order numbers
     const updatedTrips = newTrips.map((trip, index) => ({
       ...trip,
       order: index + 1
     }));
-    
+
     console.log('Updated trips:', updatedTrips.map(t => ({ id: t.id, order: t.order }))); // Debug log
-    
+
     setReorderModal(prev => ({ ...prev, trips: updatedTrips }));
     setDraggedTrip(null);
   };
@@ -570,7 +497,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
   // Function to check if a trip matches search
   const isTripSearchMatch = (trip, searchTerm) => {
     if (!searchTerm || !trip) return true;
-    
+
     const searchLower = searchTerm.toLowerCase();
     return (
       (trip.title && trip.title.toLowerCase().includes(searchLower)) ||
@@ -589,15 +516,15 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
   const saveNewOrder = async () => {
     try {
       setReorderModal(prev => ({ ...prev, saving: true }));
-      
+
       const { trips } = reorderModal;
       const tripOrders = trips.map((trip, index) => ({
         tripId: trip.id,
         order: index + 1
       }));
-      
+
       await api.put('/api/admin/trips/update-orders', { tripOrders });
-      
+
       showSuccessMessage('تم حفظ الترتيب الجديد بنجاح');
       closeReorderModal();
       fetchTrips(); // Refresh the main list
@@ -646,13 +573,14 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
             <h2>إدارة الرحلات</h2>
             <p>عرض وإدارة جميع الرحلات في النظام</p>
           </div>
-          
+
           <div className="trips-actions">
             <button className="btn btn-print" disabled>
               <FontAwesomeIcon icon={faPrint} />
               طباعة
             </button>
-            <button className="btn btn-export" disabled>
+
+            <button className="btn btn-export" onClick={exportTrips} disabled={exporting}>
               <FontAwesomeIcon icon={faDownload} />
               تصدير
             </button>
@@ -680,6 +608,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
                   placeholder="البحث في المدن..."
                   disabled
                 />
+                <div className="city-dropdown"> ... </div>
               </div>
             </div>
 
@@ -703,6 +632,74 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
     );
   }
 
+  const columns = [
+    {
+      key: 'id',
+      label: 'المعرف',
+      sortable: true,
+      render: (value) => <span className="trip-id">#{value}</span>
+    },
+    {
+      key: 'images',
+      label: 'الصورة',
+      render: (value, row) => (
+        <div className="trip-image-cell">
+          {row.images && row.images.split(',')[0] ? (
+            <img
+              src={getImageUrl(row.images.split(',')[0])}
+              alt={row.title}
+              className="trip-table-avatar"
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+          ) : (
+            <div className="trip-table-avatar-placeholder">
+              <FontAwesomeIcon icon={faMapMarkerAlt} />
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'title',
+      label: 'العنوان',
+      sortable: true,
+      render: (v) => (v ? v.substring(0, 10) : '')
+    },
+    { key: 'cityName', label: 'المدينة', sortable: true },
+    { key: 'categoryName', label: 'الفئة', sortable: true },
+    {
+      key: 'status',
+      label: 'الحالة',
+      sortable: true,
+      render: (value, row) => (
+        <div className="status-toggle">
+          <input
+            type="checkbox"
+            id={`status-${row.id}`}
+            className="status-toggle-input"
+            checked={row.status === 'Active'}
+            onChange={(e) => handleStatusChange(row.id, e.target.checked ? 'Active' : 'Disabled')}
+          />
+          <label htmlFor={`status-${row.id}`} className="status-toggle-label">
+            <span className="status-toggle-slider"></span>
+            <span className="status-toggle-text">
+              {row.status === 'Active' ? 'نشط' : 'غير نشط'}
+            </span>
+          </label>
+        </div>
+      )
+    },
+    { key: 'maxPersons', label: 'عدد الأشخاص', sortable: true },
+    {
+      key: 'createdAt',
+      label: 'تاريخ الإنشاء',
+      sortable: true,
+      render: (v) => formatDate(v)
+    }
+  ];
+
+
+
   return (
     <div className="trips-list">
       <div className="trips-header">
@@ -710,7 +707,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
           <h2>إدارة الرحلات</h2>
           <p>عرض وإدارة جميع الرحلات في النظام</p>
         </div>
-        
+
         <div className="trips-actions">
           <button className="btn btn-reorder" onClick={openReorderModal}>
             <FontAwesomeIcon icon={faArrowsAlt} />
@@ -720,7 +717,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
             <FontAwesomeIcon icon={faPrint} />
             طباعة
           </button>
-          <button className="btn btn-export" onClick={() => {}}>
+          <button className="btn btn-export" onClick={exportTrips} disabled={exporting}>
             <FontAwesomeIcon icon={faDownload} />
             تصدير
           </button>
@@ -740,7 +737,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
             onChange={handleSearchInput}
           />
           {filters.search && (
-            <button 
+            <button
               type="button"
               className="search-clear-btn"
               onClick={() => {
@@ -769,7 +766,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
                 onChange={handleCitySearchChange}
                 onFocus={() => setShowCityDropdown(true)}
               />
-              <button 
+              <button
                 type="button"
                 className="city-clear-btn"
                 onClick={() => {
@@ -782,7 +779,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
                 ×
               </button>
             </div>
-            
+
             {showCityDropdown && (
               <div className="city-dropdown">
                 {filteredCities.length > 0 ? (
@@ -813,7 +810,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
                 onChange={handleCategorySearchChange}
                 onFocus={() => setShowCategoryDropdown(true)}
               />
-              <button 
+              <button
                 type="button"
                 className="category-clear-btn"
                 onClick={() => {
@@ -826,7 +823,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
                 ×
               </button>
             </div>
-            
+
             {showCategoryDropdown && (
               <div className="category-dropdown">
                 {filteredCategories.length > 0 ? (
@@ -850,7 +847,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
 
       {error && <div className="error-message">{error}</div>}
 
-      <div className="trips-table-container">
+      {/* <div className="trips-table-container">
         <table className="trips-table">
           <thead>
             <tr>
@@ -898,12 +895,17 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
                 <td>{trip.categoryName || 'غير محدد'}</td>
                 <td>
                   <div className="status-toggle">
+
+
                     <input
                       type="checkbox"
                       id={`status-${trip.id}`}
                       className="status-toggle-input"
                       checked={trip.status === 'Active'}
-                      onChange={e => handleStatusChange(trip.id, e.target.checked ? 'Active' : 'Inactive')}
+                      onChange={(e) => {
+                        const newStatus = e.target.checked ? 'Active' : 'Disabled';
+                        handleStatusChange(trip.id, newStatus);
+                      }}
                     />
                     <label htmlFor={`status-${trip.id}`} className="status-toggle-label">
                       <span className="status-toggle-slider"></span>
@@ -939,14 +941,14 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
 
       {pagination.totalPages > 1 && (
         <div className="pagination">
-          <button 
+          <button
             className="btn-page"
             disabled={pagination.currentPage === 1}
             onClick={() => handlePageChange(pagination.currentPage - 1)}
           >
             السابق
           </button>
-          
+
           {getPaginationRange().map((item, index) => (
             <React.Fragment key={index}>
               {item === '...' ? (
@@ -962,8 +964,8 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
               )}
             </React.Fragment>
           ))}
-          
-          <button 
+
+          <button
             className="btn-page"
             disabled={pagination.currentPage === pagination.totalPages}
             onClick={() => handlePageChange(pagination.currentPage + 1)}
@@ -971,9 +973,49 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
             التالي
           </button>
         </div>
-      )}
+      )} */}
+      <CustomTable
+        columns={columns}
+        data={trips}
+        loading={loading}
+        sortBy={filters.sortBy}
+        sortOrder={filters.sortOrder}
+        onSort={handleSort}
+        pagination={{
+          currentPage: pagination.currentPage,
+          totalPages: pagination.totalPages,
+          onPageChange: handlePageChange
+        }}
+        noDataMessage="لا توجد رحلات للعرض"
+        renderActions={(trip) => (
+          <div className="categories-action-buttons">
+            <button
+              className="categories-btn-action categories-btn-view"
+              onClick={() => onViewTrip(trip.id)}
+              title="عرض التفاصيل"
+            >
+              <FontAwesomeIcon icon={faEye} />
+            </button>
+            <button
+              className="categories-btn-action categories-btn-edit"
+              onClick={() => onEditTrip(trip.id)}
+              title="تعديل"
+            >
+              <FontAwesomeIcon icon={faEdit} />
+            </button>
+            <button
+              className="categories-btn-action categories-btn-delete"
+              onClick={() => showDeleteConfirmModal(trip.id, trip.title)}
+              title="حذف"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          </div>
+        )}
+      />
 
-      <SuccessModal 
+
+      <SuccessModal
         message={successModal.message}
         isVisible={successModal.isVisible}
         onClose={closeSuccessModal}
@@ -1001,7 +1043,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
                 <FontAwesomeIcon icon={faTimes} />
               </button>
             </div>
-            
+
             <div className="reorder-modal-search">
               <div className="reorder-search-input">
                 <FontAwesomeIcon icon={faSearch} className="reorder-search-icon" />
@@ -1012,7 +1054,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
                   onChange={handleReorderSearch}
                 />
                 {reorderModal.searchTerm && (
-                  <button 
+                  <button
                     type="button"
                     className="reorder-search-clear"
                     onClick={() => setReorderModal(prev => ({ ...prev, searchTerm: '' }))}
@@ -1022,7 +1064,7 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
                 )}
               </div>
             </div>
-            
+
             <div className="reorder-modal-content">
               {reorderModal.loading ? (
                 <div className="reorder-loading">
@@ -1033,10 +1075,10 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
                 <div className="reorder-grid">
                   {getDisplayTrips().map((trip, index) => {
                     const isSearchMatch = isTripSearchMatch(trip, reorderModal.searchTerm);
-                    const searchClass = reorderModal.searchTerm 
+                    const searchClass = reorderModal.searchTerm
                       ? (isSearchMatch ? 'search-match' : 'search-no-match')
                       : '';
-                    
+
                     return (
                       <div
                         key={trip.id}
@@ -1104,24 +1146,24 @@ const TripsList = ({ onViewTrip, onEditTrip, onCreateTrip }) => {
                   })}
                 </div>
               )}
-              
+
               {getDisplayTrips().length === 0 && !reorderModal.loading && (
                 <div className="reorder-no-results">
                   <p>لا توجد رحلات للعرض</p>
                 </div>
               )}
             </div>
-            
+
             <div className="reorder-modal-actions">
-              <button 
-                className="btn btn-secondary" 
+              <button
+                className="btn btn-secondary"
                 onClick={closeReorderModal}
                 disabled={reorderModal.saving}
               >
                 إلغاء
               </button>
-              <button 
-                className="btn btn-primary" 
+              <button
+                className="btn btn-primary"
                 onClick={saveNewOrder}
                 disabled={reorderModal.saving || reorderModal.loading}
               >

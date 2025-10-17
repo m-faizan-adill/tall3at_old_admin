@@ -1,4 +1,4 @@
-/* Dashboard Home Styles */
+Dashboard Home Styles
 .dashboard-home {
   font-family: 'Cairo', 'Tajawal', 'Noto Kufi Arabic', Arial, Tahoma, 'Segoe UI', sans-serif;
   direction: rtl;
@@ -41,6 +41,7 @@
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 22px;
   margin-bottom: 32px;
+  cursor: pointer;
 }
 
 .dashboard-card {
@@ -90,12 +91,13 @@
   font-size: 0.95rem;
   color: #7a8ca3;
 }
-
+/* kdsfj */
 .dashboard-charts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 24px;
   margin-bottom: 32px;
+  display: contents;
 }
 
 .dashboard-chart {
@@ -104,6 +106,7 @@
   box-shadow: 0 2px 12px rgba(31,193,222,0.08);
   padding: 18px 12px 8px 12px;
   min-width: 0;
+  margin-bottom: 2rem;
 }
 
 .chart-title {

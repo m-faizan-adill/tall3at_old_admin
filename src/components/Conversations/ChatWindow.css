@@ -145,6 +145,7 @@
   overflow-y: auto;
   padding: 20px;
   background: linear-gradient(135deg, rgba(31, 193, 222, 0.02) 0%, rgba(0, 16, 98, 0.01) 100%);
+  background-color: #c2fff2 ;
 }
 
 .messages-container::-webkit-scrollbar {
@@ -268,13 +269,19 @@
 /* Messages List */
 .messages-list {
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   gap: 12px;
 }
 
 .message-item {
   display: flex;
   margin-bottom: 8px;
+}
+
+.message-item .message-bubble img,
+.message-item .message-image-container {
+  margin-bottom: 16px !important;
+  margin-right: 0rem;
 }
 
 .message-item.sent {
@@ -285,19 +292,23 @@
   justify-content: flex-end;
 }
 
-.message-item.provider {
+/* .message-item.provider {
   justify-content: flex-end;
-}
+} */
 
 .message-bubble {
   max-width: 70%;
-  padding: 8px 12px;
+  padding: 10px 12px 8px;
   border-radius: 18px;
   position: relative;
   word-wrap: break-word;
+   white-space: pre-wrap;
   animation: messageSlideIn 0.3s ease-out;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  display: inline-block; /* ensure content wraps properly */
+  vertical-align: top;
 }
+
 
 @keyframes messageSlideIn {
   from {
@@ -332,23 +343,39 @@
   border-bottom-right-radius: 4px;
   margin-right: auto;
   box-shadow: 0 2px 8px rgba(31, 193, 222, 0.2);
+
+  
 }
 
-.message-content {
+/* .message-content {
   font-size: 14px;
   line-height: 1.4;
   margin-bottom: 4px;
   white-space: pre-wrap;
+} */
+
+.message-content {
+  font-size: 14px;
+  line-height: 1.5;
+  color: inherit;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Image Messages */
 .message-image-container {
-  margin: -8px -12px 4px -12px;
-  border-radius: 18px;
+  display: block;
+  max-width: 180px;
+  max-height: 280px;
+  border-radius: 12px;
   overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s ease;
+  margin: 6px 0;
+  position: relative;
 }
+
+
 
 .message-image-container:hover {
   transform: scale(1.02);
@@ -356,11 +383,12 @@
 
 .message-image {
   width: 100%;
-  max-width: 300px;
   height: auto;
-  display: block;
-  border-radius: 12px;
   object-fit: cover;
+  border-radius: 12px;
+  display: block;
+  position: relative;
+  margin: 0;
 }
 
 .message-image-caption {
@@ -762,3 +790,135 @@
     font-size: 11px;
   }
 } 
+
+/* 🔹 ADDED */
+.chat-user-info.clickable { cursor: pointer; }
+
+/* ChatWindow.css */
+
+.chat-header.two-sided {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* provider left, customer right */
+  gap: 12px;
+}
+
+.chat-user-info.clickable { cursor: pointer; }
+.chat-user-info.left  { flex-direction: row;  display:flex; align-items:center; gap:10px; }
+.chat-user-info.right { flex-direction: row-reverse; display:flex; align-items:center; gap:10px; text-align:right; }
+
+.chat-actions { display:flex; align-items:center; gap:8px; }
+
+
+/* 🔸 UPDATED: background already OK */
+
+/* 🔸 UPDATED: messages container already OK */
+
+/* =========================================
+   ALIGNMENT: provider right, customer left
+========================================= */
+
+.message-item {
+  display: flex;
+
+}
+/* 🔹 NEW: customer row alignment */
+.message-item.customer { 
+  justify-content: flex-start; /* left side in RTL layout block (our CSS uses justify) */
+}
+/* 🔸 UPDATED: provider already exists but ensure right side */
+.message-item.provider { 
+  display: ruby;
+  justify-content: flex-end; 
+      margin-bottom: 1.5rem;
+
+}
+/* OPTIONAL: remove old .sent/.received usage in markup */
+
+/* =========================================
+   BUBBLE padding a bit more (to fit header)
+========================================= */
+.message-bubble {
+  /* 🔸 UPDATED: top padding was 8px → 10px */
+  padding: 10px 12px 8px;
+}
+
+/* =========================================
+   Sender mini header (avatar + name + badge)
+========================================= */
+/* 🔹 NEW */
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+/* 🔹 NEW */
+.msg-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* 🔹 NEW */
+.msg-sender { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.msg-name { font-size: 12px; font-weight: 700; white-space: nowrap; color: #0f172a; }
+
+/* 🔹 NEW */
+.msg-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+  border: 1px solid transparent;
+}
+.msg-badge i { font-size: 9px; }
+
+/* 🔹 NEW: badge colors by role */
+.msg-badge.provider { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+.msg-badge.customer { background: #dbeafe; color: #1e3a8a; border-color: #bfdbfe; }
+.msg-badge.admin    { background: #ede9fe; color: #5b21b6; border-color: #ddd6fe; }
+
+/* 🔹 NEW: better contrast when bubble itself is colored (provider) */
+.message-header.provider .msg-name,
+.message-header.provider .msg-badge { color: #ffffff; }
+.message-header.provider .msg-badge { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.28); }
+
+/* If you ever style customer bubble with strong color, add similar override:
+.message-header.customer .msg-name, .message-header.customer .msg-badge { ... }
+*/
+
+/* =========================================
+   BUBBLE COLORS (keep your existing)
+========================================= */
+/* Customer bubble (left) — your existing received style reused for 'customer' */
+.message-item.customer .message-bubble {
+  background: rgba(255, 255, 255, 0.95);
+  color: #374151;
+  border: 1px solid rgba(31, 193, 222, 0.2);
+  border-bottom-right-radius: 4px;
+  backdrop-filter: blur(10px);
+  margin-right: auto; /* push left */
+}
+
+/* Provider bubble (right) — your existing provider style */
+.message-item.provider .message-bubble {
+  background: rgba(31, 193, 222, 0.8);
+  color: white;
+  border-bottom-right-radius: 4px;
+  margin-left: auto;  /* push right */
+  box-shadow: 0 2px 8px rgba(31, 193, 222, 0.2);
+}
+
+/* (Optional) remove old selectors to avoid confusion:
+.message-item.sent {...}
+.message-item.received {...}
+*/
+

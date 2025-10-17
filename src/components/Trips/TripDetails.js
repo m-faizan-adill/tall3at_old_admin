@@ -62,7 +62,7 @@ const TripDetails = ({ tripId, onBack, onEdit }) => {
     try {
       setLoading(true);
       const response = await api.get(`/api/trips/${tripId}`);
-      console.log('Trip details response:', response.data);
+      console.log('Trip details response:', response.data.packages);
       console.log('Provider image fields:', {
         providerProfileImage: response.data.providerProfileImage,
         providerImage: response.data.providerImage,
@@ -197,10 +197,8 @@ const TripDetails = ({ tripId, onBack, onEdit }) => {
     try {
       // Show confirmation dialog
       if (window.confirm('هل تريد نسخ هذه الرحلة؟')) {
-        // Here you would implement the duplicate logic
         console.log('Duplicating trip:', tripId);
-        // You can call an API to duplicate the trip
-        // const response = await api.post(`/api/trips/${tripId}/duplicate`);
+       
         alert('تم نسخ الرحلة بنجاح');
       }
     } catch (error) {
@@ -210,10 +208,8 @@ const TripDetails = ({ tripId, onBack, onEdit }) => {
   };
 
   const handleViewTrip = (tripId) => {
-    // Open trip in a new tab or modal
     console.log('Viewing trip:', tripId);
-    // You can implement view logic here
-    // window.open(`/trip/${tripId}`, '_blank');
+
   };
 
   const handleDeleteTrip = async (tripId) => {
@@ -222,8 +218,6 @@ const TripDetails = ({ tripId, onBack, onEdit }) => {
       if (window.confirm('هل أنت متأكد من حذف هذه الرحلة؟ هذا الإجراء لا يمكن التراجع عنه.')) {
         // Here you would implement the delete logic
         console.log('Deleting trip:', tripId);
-        // You can call an API to delete the trip
-        // const response = await api.delete(`/api/trips/${tripId}`);
         alert('تم حذف الرحلة بنجاح');
         onBack(); // Go back to the list
       }
@@ -342,6 +336,8 @@ const TripDetails = ({ tripId, onBack, onEdit }) => {
           </div>
         </div>
 
+
+        
         {/* Trip Images Gallery */}
         {images.length > 0 && (
           <div className="trip-details-images">

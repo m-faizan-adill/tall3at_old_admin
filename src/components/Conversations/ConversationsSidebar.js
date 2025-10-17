@@ -2,20 +2,53 @@ import React, { useEffect, useState } from 'react';
 import { fetchConversations } from '../../services/chatApi';
 import { API_CONFIG } from '../../constants/config';
 import './ConversationsSidebar.css';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-const ConversationsSidebar = ({ onSelectConversation, selectedConversationId }) => {
+const ConversationsSidebar = ({ onSelectConversation, selectedConversationId, initialSelectedConversationId }) => {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [sortOrder, setSortOrder] = useState('desc');
   const [pagination, setPagination] = useState({ page: 1, pageSize: 12, totalPages: 1 });
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  function goToProvider(provider) {
+    const id = provider?.id ?? provider?.userId;
+    if (!id) return;
+    navigate(`/admin/providers/${id}`, {
+      state: {
+        origin: 'list',                              // 👈 came from conversation list
+        from: location.pathname + location.search    // e.g. "/admin/chat"
+      }
+    });
+  }
+
+  function goToCustomer(customer) {
+    const id = customer?.id ?? customer?.userId;
+    if (!id) return;
+    navigate(`/admin/customers/${id}`, {
+      state: {
+        origin: 'list',
+        from: location.pathname + location.search
+      }
+    });
+  }
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return '/assets/images/default-avatar.png';
     if (imagePath.startsWith('http')) return imagePath;
     return `${API_CONFIG.BASE_URL}/images/profiles/${imagePath}`;
   };
+
+  // ConversationsSidebar.jsx(after conversations list load)
+  useEffect(() => {
+    if (!initialSelectedConversationId || conversations.length === 0) return;
+    const conv = conversations.find(c => String(c.conversationId) === String(initialSelectedConversationId));
+    if (conv) onSelectConversation(conv);
+  }, [initialSelectedConversationId, conversations, onSelectConversation]);
+
 
   useEffect(() => {
     loadConversations();
@@ -54,7 +87,7 @@ const ConversationsSidebar = ({ onSelectConversation, selectedConversationId }) 
     console.log('User1Id:', conv.user1Id);
     console.log('User2Id:', conv.user2Id);
     console.log('Participants:', conv.participants);
-    
+
     if (onSelectConversation) {
       onSelectConversation(conv);
     }
@@ -88,15 +121,15 @@ const ConversationsSidebar = ({ onSelectConversation, selectedConversationId }) 
 
   return (
     <aside className="conversations-sidebar">
-      <div className="sidebar-header">
+      <div className="sidebar-header-c">
         <div className="sidebar-title-section">
-         
+
           <h2>المحادثات</h2>
           <div className="sidebar-title-badge">
             {conversations.length}
           </div>
         </div>
-        
+
         <div className="sidebar-search-section">
           <div className="search-input-wrapper">
             <i className="fas fa-search search-icon"></i>
@@ -108,7 +141,7 @@ const ConversationsSidebar = ({ onSelectConversation, selectedConversationId }) 
               onChange={e => { setSearch(e.target.value); setPagination(p => ({ ...p, page: 1 })); }}
             />
             {search && (
-              <button 
+              <button
                 className="search-clear-btn"
                 onClick={() => { setSearch(''); setPagination(p => ({ ...p, page: 1 })); }}
               >
@@ -157,7 +190,7 @@ const ConversationsSidebar = ({ onSelectConversation, selectedConversationId }) 
             {conversations.map(conv => {
               const other = getOtherUser(conv);
               const isSelected = selectedConversationId === conv.conversationId;
-              
+
               return (
                 <div
                   key={conv.conversationId}
@@ -170,14 +203,14 @@ const ConversationsSidebar = ({ onSelectConversation, selectedConversationId }) 
                       alt={other?.fullName || 'مستخدم'}
                       onError={e => { e.target.src = '/assets/images/users.png'; }}
                     />
-                    <div 
+                    <div
                       className="status-indicator"
                       style={{ backgroundColor: getStatusColor(other?.role) }}
                     >
                       <i className={getStatusIcon(other?.role)}></i>
                     </div>
                   </div>
-                  
+
                   <div className="conversation-content">
                     <div className="conversation-header">
                       <div className="conversation-info">
@@ -194,7 +227,7 @@ const ConversationsSidebar = ({ onSelectConversation, selectedConversationId }) 
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="conversation-preview">
                       {conv.lastMessage?.content ? (
                         <div className="message-preview">
@@ -209,7 +242,7 @@ const ConversationsSidebar = ({ onSelectConversation, selectedConversationId }) 
                       )}
                     </div>
                   </div>
-                  
+
                   {isSelected && <div className="selection-indicator"></div>}
                 </div>
               );

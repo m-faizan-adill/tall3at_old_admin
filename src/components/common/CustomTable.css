@@ -1,0 +1,157 @@
+/* 🌟 Unified Custom Table Styling */
+
+.custom-table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 24px;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* ===== HEADER ===== */
+.custom-table th {
+  background: linear-gradient(135deg, #f9fafb, #f1f5f9);
+  color: #1e293b;
+  font-weight: 700;
+  padding: 14px 16px;
+  text-align: center;
+  /* ✅ consistent alignment */
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+  font-size: 14px;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.custom-table th:hover {
+  background: #e2e8f0;
+  color: #0ea5e9;
+}
+
+/* ===== BODY ===== */
+.custom-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  text-align: center;
+  /* ✅ centered text for consistent visuals */
+  font-size: 14px;
+  color: #334155;
+}
+
+/* first column (ID) slight highlight */
+.custom-table td:first-child {
+  font-weight: 600;
+  color: #1fc1de;
+}
+
+/* alternating rows */
+.custom-table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+/* hover effect */
+.custom-table tbody tr:hover {
+  background: #eef2ff;
+  transition: background 0.25s ease;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.categories-action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.categories-btn-action {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.categories-btn-view {
+  background: #3b82f6;
+}
+
+.categories-btn-edit {
+  background: #f59e0b;
+}
+
+.categories-btn-delete {
+  background: #ef4444;
+}
+
+.categories-btn-action:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+/* ===== PAGINATION ===== */
+.pagination {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-page {
+  padding: 6px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  color: #374151;
+  transition: all 0.2s ease;
+}
+
+.btn-page:hover {
+  background: #1fc1de;
+  color: white;
+  border-color: #1fc1de;
+}
+
+.btn-page.active {
+  background: #1fc1de;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 992px) {
+
+  .custom-table th,
+  .custom-table td {
+    font-size: 13px;
+    padding: 10px 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .custom-table {
+    min-width: 900px;
+  }
+
+  .custom-table-container {
+    -webkit-overflow-scrolling: touch;
+    /* ✅ smooth scroll for iOS */
+    scroll-behavior: smooth;
+  }
+
+  .custom-table th,
+  .custom-table td {
+    white-space: nowrap;
+    /* prevent multi-line wrapping */
+  }
+}

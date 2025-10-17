@@ -1,41 +1,21 @@
-/* Enhanced Table Design */
-.trips-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+:root {
+  --primary-color: #1fc1de;
+  --secondary-color: #1fc1de;
+  --white: #ffffff;
+  --text-dark: #001062;
+  --text-light: #1fc1de;
+  --error-color: #e74c3c;
+  --success-color: #2ecc71;
+  --shadow-light: rgba(31, 193, 222, 0.15);
+  --shadow-dark: rgba(0, 16, 98, 0.15);
 }
 
-.trips-table th {
-  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-  color: #1e293b;
-  font-weight: 600;
-  padding: 16px 12px;
-  text-align: right;
-  border-bottom: 2px solid #e2e8f0;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 14px;
-}
-
-.trips-table th:hover {
-  background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
-  color: #1fc1de;
-}
-
-.trips-table td {
-  padding: 16px 12px;
-  border-bottom: 1px solid #f1f5f9;
-  vertical-align: middle;
-  font-size: 14px;
-}
-
-.trips-table tr:hover {
-  background: #f8fafc;
-  transform: scale(1.001);
-  transition: all 0.2s ease;
+.bookings-list {
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-height: 100vh;
 }
 
 /* Trip Info */
@@ -60,77 +40,24 @@
 }
 
 /* User and Provider Info */
-.user-info, .provider-info {
+.user-info,
+.provider-info {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.user-name, .provider-name {
+.user-name,
+.provider-name {
   font-weight: 600;
   color: #1e293b;
   font-size: 14px;
 }
 
-.user-phone, .provider-phone {
+.user-phone,
+.provider-phone {
   color: #64748b;
   font-size: 12px;
-}
-
-/* Status Dropdown with Colors */
-.status-dropdown {
-  padding: 4px 8px;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: #1e293b;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 140px;
-}
-
-.status-dropdown:hover {
-  border-color: #1fc1de;
-  box-shadow: 0 2px 8px rgba(31, 193, 222, 0.2);
-}
-
-.status-dropdown:focus {
-  outline: none;
-  border-color: #1fc1de;
-  box-shadow: 0 0 0 3px rgba(31, 193, 222, 0.1);
-}
-
-/* Status-specific colors */
-.status-dropdown.status-provider-pending {
-  background: transparent;
-  border: none;
-  color: #92400e;
-}
-
-.status-dropdown.status-pending-payment {
-  background: transparent;
-  border: none;
-  color: #92400e;
-}
-
-.status-dropdown.status-paid {
-  background: transparent;
-  border: none;
-  color: #1e40af;
-}
-
-.status-dropdown.status-completed {
-  background: transparent;
-  border: none;
-  color: #065f46;
-}
-
-.status-dropdown.status-canceled {
-  background: transparent;
-  border: none;
-  color: #991b1b;
 }
 
 /* Cost Amount */
@@ -256,8 +183,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* No Data */
@@ -272,14 +204,64 @@
   font-size: 16px;
 }
 
+.status-dropdown {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+  outline: none;
+  transition: 0.2s ease;
+  /* padding-left: 28px;  */
+  /* background-position: left 10px center;  */
+}
+
+/* hover feedback */
+.status-dropdown:hover {
+  border-color: #1fc1de;
+}
+
+.status-dropdown.status-provider-pending {
+  background: rgba(250, 204, 21, 0.15);
+  /* soft yellow */
+  color: #854d0e;
+  border: none;
+}
+
+.status-dropdown.status-pending-payment {
+  background: rgba(34, 197, 94, 0.15);
+  /* soft green */
+  border: none;
+  color: #92400e;
+}
+
+.status-dropdown.status-paid {
+  background: rgba(59, 130, 246, 0.15);
+  /* soft blue */
+  border: none;
+  color: #1e40af;
+}
+
+.status-dropdown.status-completed {
+  background: rgba(13, 148, 136, 0.15);
+  /* teal tint */
+  border: none;
+  color: #065f46;
+}
+
+.status-dropdown.status-canceled {
+  background: rgba(239, 68, 68, 0.15);
+  /* red tint */
+  border: none;
+  color: #991b1b;
+}
+
+
 /* Responsive Design */
 @media (max-width: 1200px) {
-  .trips-table th,
-  .trips-table td {
-    padding: 12px 8px;
-    font-size: 13px;
-  }
-  
+
+
   .status-dropdown {
     min-width: 120px;
     font-size: 12px;
@@ -287,22 +269,15 @@
 }
 
 @media (max-width: 768px) {
-  .trips-table-container {
-    overflow-x: auto;
-  }
-  
-  .trips-table {
-    min-width: 800px;
-  }
-  
+
   .action-buttons {
     flex-direction: column;
     gap: 4px;
   }
-  
+
   .btn-action {
     width: 32px;
     height: 32px;
     font-size: 12px;
   }
-} 
+}

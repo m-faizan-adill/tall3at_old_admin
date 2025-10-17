@@ -1,6 +1,6 @@
 import { API_CONFIG } from '../constants/config';
 
-const BASE = API_CONFIG.BASE_URL + 'api/admin/chat';
+const BASE = API_CONFIG.BASE_URL + '/api/admin/chat';
 
 export async function fetchConversations(params = {}) {
   const url = new URL(BASE + '/conversations');

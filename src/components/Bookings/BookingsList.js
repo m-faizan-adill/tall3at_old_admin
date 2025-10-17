@@ -14,28 +14,16 @@ import {
   faSortDown,
   faCheckCircle,
   faClock,
-  faTimesCircle,
   faBan,
-  faUser,
-  faUserTie,
-  faUsers,
-  faCalendarAlt,
-  faMoneyBillWave,
-  faInfoCircle
+
 } from '@fortawesome/free-solid-svg-icons';
 import api from '../../services/api';
-import { API_CONFIG } from '../../constants/config';
 import { formatDate } from '../../utils/dateUtils';
 import SuccessModal from '../SuccessModal';
 import DeleteConfirmModal from '../DeleteConfirmModal';
 import './BookingsList.css';
-
-// Utility function to get trip image URL
-const getTripImageUrl = (imagePath) => {
-  if (!imagePath) return '/assets/images/default-trip.png';
-  if (imagePath.startsWith('http')) return imagePath;
-  return `${API_CONFIG.BASE_URL}${imagePath}`;
-};
+import CustomTable from '../common/CustomTable';
+import { exportBookingsListCSV, printBookingsListPDF } from '../../utils/exportHelpers';
 
 // Function to format time as AM/PM
 const formatTime = (time) => {
@@ -46,12 +34,12 @@ const formatTime = (time) => {
     if (time.includes(' ')) {
       timeString = time.split(' ')[1]; // Extract time part after space
     }
-    
+
     // Remove milliseconds if present
     if (timeString.includes('.')) {
       timeString = timeString.split('.')[0];
     }
-    
+
     const [hours, minutes] = timeString.split(':');
     const hour = parseInt(hours);
     const ampm = hour >= 12 ? 'م' : 'ص';
@@ -61,14 +49,6 @@ const formatTime = (time) => {
     console.error('Error formatting time:', error);
     return time;
   }
-};
-
-// Function to format date and time together
-const formatDateTime = (date, time) => {
-  if (!date || !time) return '-';
-  const formattedTime = formatTime(time);
-  const formattedDate = formatDate(date);
-  return `${formattedTime} - ${formattedDate}`;
 };
 
 // Function to extract date from datetime string
@@ -107,6 +87,8 @@ const BookingsList = ({ onViewBooking, onEditBooking, onCreateBooking }) => {
     startDate: '',
     endDate: '',
     sortBy: 'createdAt',
+    filterType: '', // 🆕 upcoming / blank
+
     sortOrder: 'desc'
   });
   const [showFilters, setShowFilters] = useState(false);
@@ -171,73 +153,15 @@ const BookingsList = ({ onViewBooking, onEditBooking, onCreateBooking }) => {
     }
   };
 
+  //CSV
+  const exportBookings = async () => {
+    await exportBookingsListCSV(setError)
+  }
+
+  //Print PDF
   const printBookings = () => {
-    try {
-      const printWindow = window.open('', '_blank');
-      const printContent = `
-        <!DOCTYPE html>
-        <html dir="rtl">
-        <head>
-          <title>قائمة الحجوزات - طلعات</title>
-          <style>
-            body { font-family: 'Cairo', 'Tajawal', 'Noto Kufi Arabic', Arial, sans-serif; margin: 20px; direction: rtl; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1fc1de; padding-bottom: 20px; }
-            .header h1 { color: #1fc1de; margin: 0; font-size: 24px; }
-            .header p { color: #666; margin: 5px 0 0 0; font-size: 14px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
-            th { background-color: #f8f9fa; font-weight: bold; color: #1fc1de; }
-            .status-completed { color: #10b981; font-weight: bold; }
-            .status-pending { color: #f59e0b; font-weight: bold; }
-            .status-canceled { color: #ef4444; font-weight: bold; }
-            @media print { body { margin: 0; } .no-print { display: none; } }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>قائمة الحجوزات</h1>
-            <p>تطبيق طلعات - ${new Date().toLocaleDateString('ar-SA')}</p>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>المعرف</th>
-                <th>الرحلة</th>
-                <th>المستخدم</th>
-                <th>المزود</th>
-                <th>الحالة</th>
-                <th>التكلفة</th>
-                <th>عدد الأشخاص</th>
-                <th>تاريخ الحجز</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${bookings.map(b => `
-                <tr>
-                  <td>${b.id}</td>
-                  <td>${b.tripTitle || '-'}</td>
-                  <td>${b.userName || '-'}</td>
-                  <td>${b.providerName || '-'}</td>
-                  <td>${statusMap[b.status]?.text || b.status}</td>
-                  <td>${b.totalCost} ريال</td>
-                  <td>${b.persons}</td>
-                  <td>${formatDate(b.bookingDate)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </body>
-        </html>
-      `;
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
-    } catch (err) {
-      setError('فشل في طباعة البيانات');
-    }
-  };
+    printBookingsListPDF(bookings, statusMap, formatDate, setError);
+  }
 
   const showSuccessMessage = (message) => {
     setSuccessModal({ isVisible: true, message });
@@ -261,7 +185,12 @@ const BookingsList = ({ onViewBooking, onEditBooking, onCreateBooking }) => {
       fetchBookings();
       showSuccessMessage('تم حذف الحجز بنجاح');
     } catch (err) {
-      setError('فشل في حذف الحجز');
+      const validationError = err.response?.data?.message
+      const message = validationError || 'فشل في حذف الحجز';
+      setError(message);
+      setTimeout(() => {
+        setError(null)
+      }, 4500)
     }
   };
 
@@ -269,6 +198,34 @@ const BookingsList = ({ onViewBooking, onEditBooking, onCreateBooking }) => {
     if (filters.sortBy !== field) return <FontAwesomeIcon icon={faSort} />;
     return filters.sortOrder === 'asc' ? <FontAwesomeIcon icon={faSortUp} /> : <FontAwesomeIcon icon={faSortDown} />;
   };
+
+  const columns = [
+    { key: 'id', label: 'المعرف', sortable: true, render: (value) => <span className="booking-id">#{value}</span> },
+    { key: 'tripTitle', label: 'الرحلة', sortable: true },
+    { key: 'userName', label: 'المستخدم', sortable: true },
+    { key: 'providerName', label: 'المزود', sortable: true },
+    {
+      key: 'status',
+      label: 'الحالة',
+      render: (value, row) => (
+        <select
+          value={row.status}
+          onChange={e => handleStatusChange(row.id, e.target.value)}
+          className={`status-dropdown status-${row.status.toLowerCase().replace(' ', '-')}`}
+        >
+
+          <option value="Provider Pending" className="status-provider-pending">في انتظار المزود</option>
+          <option value="Pending Payment" className="status-pending-payment">في انتظار الدفع</option>
+          <option value="Paid" className="status-paid">مدفوع</option>
+          <option value="Completed" className="status-completed">مكتمل</option>
+          <option value="Canceled" className="status-canceled">ملغي</option>
+        </select>
+      )
+    }, { key: 'totalCost', label: 'التكلفة', sortable: true },
+    { key: 'startTime', label: 'وقت البدء', sortable: true, render: (v) => formatTime(v) },
+    { key: 'endTime', label: 'وقت الانتهاء', sortable: true, render: (v) => formatTime(v) },
+    { key: 'bookingDate', label: 'تاريخ الحجز', sortable: true, render: (v) => formatDate(v) },
+  ];
 
   return (
     <div className="bookings-list">
@@ -282,10 +239,11 @@ const BookingsList = ({ onViewBooking, onEditBooking, onCreateBooking }) => {
             <FontAwesomeIcon icon={faPrint} />
             طباعة
           </button>
-          <button className="btn btn-export" onClick={() => {}}>
+          <button className="btn btn-export" onClick={exportBookings}>
             <FontAwesomeIcon icon={faDownload} />
             تصدير
           </button>
+
           <button className="btn btn-primary" onClick={onCreateBooking}>
             <FontAwesomeIcon icon={faPlus} />
             إضافة حجز جديد
@@ -293,7 +251,7 @@ const BookingsList = ({ onViewBooking, onEditBooking, onCreateBooking }) => {
         </div>
       </div>
       <div className="trips-filters">
-        <div className="search-box">
+        <div className="categories-search-box">
           <FontAwesomeIcon icon={faSearch} />
           <input
             type="text"
@@ -308,6 +266,20 @@ const BookingsList = ({ onViewBooking, onEditBooking, onCreateBooking }) => {
         >
           <FontAwesomeIcon icon={faFilter} />
           تصفية
+        </button>
+
+        <button
+          className={`btn ${filters.filterType === 'upcoming' ? 'btn-secondary' : 'btn-light'}`}
+          onClick={() => {
+            setPagination(prev => ({ ...prev, currentPage: 1 }));
+            setFilters(prev => ({
+              ...prev,
+              filterType: prev.filterType === 'upcoming' ? '' : 'upcoming' // toggle
+            }));
+          }}
+        >
+          <FontAwesomeIcon icon={faClock} />
+          الحجوزات القادمة
         </button>
       </div>
       {showFilters && (
@@ -372,155 +344,47 @@ const BookingsList = ({ onViewBooking, onEditBooking, onCreateBooking }) => {
         </div>
       )}
       {error && <div className="error-message">{error}</div>}
-      <div className="trips-table-container">
-        <table className="trips-table">
-          <thead>
-            <tr>
-              <th onClick={() => handleSort('id')}>المعرف {getSortIcon('id')}</th>
-              <th onClick={() => handleSort('tripTitle')}>الرحلة {getSortIcon('tripTitle')}</th>
-              <th onClick={() => handleSort('userName')}>المستخدم {getSortIcon('userName')}</th>
-              <th onClick={() => handleSort('providerName')}>المزود {getSortIcon('providerName')}</th>
-              <th>الحالة</th>
-              <th onClick={() => handleSort('totalCost')}>التكلفة {getSortIcon('totalCost')}</th>
-              <th onClick={() => handleSort('startTime')}>وقت البدء {getSortIcon('startTime')}</th>
-              <th onClick={() => handleSort('endTime')}>وقت الانتهاء {getSortIcon('endTime')}</th>
-              <th onClick={() => handleSort('bookingDate')}>تاريخ الحجز {getSortIcon('bookingDate')}</th>
-              <th>الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="10" className="loading-row">
-                  <div className="loading-spinner"></div>
-                  <p>جاري تحميل البيانات...</p>
-                </td>
-              </tr>
-            ) : bookings.length > 0 ? (
-              bookings.map(booking => (
-                <tr key={booking.id}>
-                  <td><span className="booking-id">#{booking.id}</span></td>
-                  <td>
-                    <div className="trip-info">
-                      <span className="trip-title">{booking.tripTitle || '-'}</span>
-                      {booking.trip?.cityName && (
-                        <span className="trip-location">{booking.trip.cityName}</span>
-                      )}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="user-info">
-                      <span className="user-name">{booking.userName || '-'}</span>
-                      {booking.userPhone && (
-                        <span className="user-phone">{booking.userPhone}</span>
-                      )}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="provider-info">
-                      <span className="provider-name">{booking.providerName || '-'}</span>
-                      {booking.providerPhone && (
-                        <span className="provider-phone">{booking.providerPhone}</span>
-                      )}
-                    </div>
-                  </td>
-                  <td>
-                    <select
-                      value={booking.status}
-                      onChange={e => handleStatusChange(booking.id, e.target.value)}
-                      className={`status-dropdown status-${booking.status.toLowerCase().replace(' ', '-')}`}
-                    >
-                      <option value="Provider Pending" className="status-provider-pending">في انتظار المزود</option>
-                      <option value="Pending Payment" className="status-pending-payment">في انتظار الدفع</option>
-                      <option value="Paid" className="status-paid">مدفوع</option>
-                      <option value="Completed" className="status-completed">مكتمل</option>
-                      <option value="Canceled" className="status-canceled">ملغي</option>
-                    </select>
-                  </td>
-                  <td>
-                    <span className="cost-amount">{booking.totalCost}</span>
-                  </td>
-                  <td>
-                    <div className="time-info">
-                      <span className="time-value">{formatTime(booking.startTime)}</span>
-                      {booking.startTime && (
-                        <span className="date-value">{formatDate(extractDateFromDateTime(booking.startTime))}</span>
-                      )}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="time-info">
-                      <span className="time-value">{formatTime(booking.endTime)}</span>
-                      {booking.endTime && (
-                        <span className="date-value">{formatDate(extractDateFromDateTime(booking.endTime))}</span>
-                      )}
-                    </div>
-                  </td>
-                  <td>{formatDate(booking.bookingDate)}</td>
-                  <td>
-                    <div className="categories-action-buttons">
-                      <button
-                        className="categories-btn-action categories-btn-view"
-                        onClick={() => onViewBooking(booking.id)}
-                        title="عرض التفاصيل"
-                      >
-                        <FontAwesomeIcon icon={faEye} />
-                      </button>
-                      <button
-                        className="categories-btn-action categories-btn-edit"
-                        onClick={() => onEditBooking(booking.id)}
-                        title="تعديل"
-                      >
-                        <FontAwesomeIcon icon={faEdit} />
-                      </button>
-                      <button
-                        className="categories-btn-action categories-btn-delete"
-                        onClick={() => showDeleteConfirmModal(booking.id)}
-                        title="حذف"
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="10" className="no-data">
-                  <p>لا توجد حجوزات للعرض</p>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-      {pagination.totalPages > 1 && (
-        <div className="pagination">
-          <button
-            className="btn-page"
-            disabled={pagination.currentPage === 1}
-            onClick={() => handlePageChange(pagination.currentPage - 1)}
-          >
-            السابق
-          </button>
-          {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => (
+
+      <CustomTable
+        columns={columns}
+        data={bookings}
+        loading={loading}
+        sortBy={filters.sortBy}
+        sortOrder={filters.sortOrder}
+        onSort={handleSort}
+        pagination={{
+          currentPage: pagination.currentPage,
+          totalPages: pagination.totalPages,
+          onPageChange: handlePageChange
+        }}
+        renderActions={(row) => (
+          <div className="categories-action-buttons">
             <button
-              key={page}
-              className={`btn-page ${page === pagination.currentPage ? 'active' : ''}`}
-              onClick={() => handlePageChange(page)}
+              className="categories-btn-action categories-btn-view"
+              onClick={() => onViewBooking(row.id)}
+              title="عرض التفاصيل"
             >
-              {page}
+              <FontAwesomeIcon icon={faEye} />
             </button>
-          ))}
-          <button
-            className="btn-page"
-            disabled={pagination.currentPage === pagination.totalPages}
-            onClick={() => handlePageChange(pagination.currentPage + 1)}
-          >
-            التالي
-          </button>
-        </div>
-      )}
+            <button
+              className="categories-btn-action categories-btn-edit"
+              onClick={() => onEditBooking(row.id)}
+              title="تعديل"
+            >
+              <FontAwesomeIcon icon={faEdit} />
+            </button>
+            <button
+              className="categories-btn-action categories-btn-delete"
+              onClick={() => showDeleteConfirmModal(row.id)}
+              title="حذف"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          </div>
+        )}
+      />
+      {/* custom table component ended */}
+
       <SuccessModal
         message={successModal.message}
         isVisible={successModal.isVisible}

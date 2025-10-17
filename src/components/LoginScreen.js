@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/LoginScreen.css';
 import api from '../services/api';
 import { ENDPOINTS, STORAGE_KEYS, ROLES } from '../constants/config';
+import { testSignalRConnection } from '../services/testNotification';
 
 const LoginScreen = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const LoginScreen = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -55,6 +57,9 @@ const LoginScreen = () => {
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.data.user));
         localStorage.setItem(STORAGE_KEYS.USER_ROLE, response.data.user.role);
 
+
+        testSignalRConnection();
+
         // Redirect based on user role
         if (response.data.user.role === ROLES.ADMIN) {
           navigate('/admin/home');
@@ -70,8 +75,8 @@ const LoginScreen = () => {
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.response?.status === 401 
-        ? 'اسم المستخدم أو كلمة المرور غير صحيحة' 
+      setError(err.response?.status === 401
+        ? 'اسم المستخدم أو كلمة المرور غير صحيحة'
         : 'حدث خطأ. يرجى المحاولة مرة أخرى.');
     } finally {
       setLoading(false);
@@ -83,26 +88,26 @@ const LoginScreen = () => {
       <div className="background-pattern"></div>
       <div className="login-container">
         <div className="login-card">
-        <div className="logo-section">
-              <div className="logo-icon">
-                <img src={process.env.PUBLIC_URL + '/assets/images/logo.png'} alt="طلعات" className="logo-avatar" />
-              </div>
-              <h1 className="brand-name">طلعات</h1>
+          <div className="logo-section">
+            <div className="logo-icon">
+              <img src={process.env.PUBLIC_URL + '/assets/images/logo.png'} alt="طلعات" className="logo-avatar" />
             </div>
-          
+            <h1 className="brand-name">طلعات</h1>
+          </div>
+
           <div className="card-body">
             <div className="form-header">
               <h2>مرحباً بك</h2>
               <p>يرجى تسجيل الدخول إلى حسابك</p>
             </div>
-            
+
             {error && (
               <div className="error-message">
                 <i className="fas fa-exclamation-circle"></i>
                 <span>{error}</span>
               </div>
             )}
-            
+
             <form onSubmit={handleSubmit} className="login-form">
               <div className="form-group">
                 <div className="input-wrapper">
@@ -119,12 +124,12 @@ const LoginScreen = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="form-group">
                 <div className="input-wrapper">
                   <i className="input-icon fas fa-lock"></i>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
@@ -134,8 +139,21 @@ const LoginScreen = () => {
                     dir="rtl"
                   />
                 </div>
+
+                <button
+                  type="button"
+                  className="toggle-visibility"
+                  aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                  onMouseDown={(e) => e.preventDefault()}   // prevent input blur
+                  onClick={() => setShowPassword((s) => !s)}
+                >
+                  <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"} />
+                  <span className="toggle-text">
+                    {showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                  </span>
+                </button>
               </div>
-              
+
               <div className="form-options">
                 <label className="remember-me">
                   <input
@@ -147,9 +165,9 @@ const LoginScreen = () => {
                   <span>تذكرني</span>
                 </label>
               </div>
-              
-              <button 
-                type="submit" 
+
+              <button
+                type="submit"
                 className={`login-button ${loading ? 'loading' : ''}`}
                 disabled={loading}
               >
@@ -166,7 +184,7 @@ const LoginScreen = () => {
                 )}
               </button>
             </form>
-          
+
           </div>
         </div>
       </div>

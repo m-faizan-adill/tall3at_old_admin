@@ -1,18 +1,29 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import BookingsList from './BookingsList';
-import BookingDetails from './BookingDetails';
 import BookingForm from './BookingForm';
+import BookingDetails from './BookingDetails';
 import CustomerDetails from '../Customers/CustomerDetails';
 import ProviderDetails from '../Providers/ProviderDetails';
 import TripDetails from '../Trips/TripDetails';
 import './BookingsList.css';
+import { useLocation } from 'react-router-dom';
 
 const BookingsDashboard = () => {
+  const location = useLocation();
+  const {  providerId, tripId, bookingId } = location.state || {};
+
   const [currentView, setCurrentView] = useState('list');
   const [selectedBookingId, setSelectedBookingId] = useState(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [selectedProviderId, setSelectedProviderId] = useState(null);
   const [selectedTripId, setSelectedTripId] = useState(null);
+
+  useEffect(() => {
+    if (bookingId) {
+      setSelectedBookingId(bookingId);
+      setCurrentView("booking-details");
+    }
+  }, [providerId, tripId, bookingId]);
 
   const handleViewBooking = (bookingId) => {
     setSelectedBookingId(bookingId);
@@ -99,7 +110,7 @@ const BookingsDashboard = () => {
           <CustomerDetails
             customerId={selectedCustomerId}
             onBack={handleBackToBooking}
-            onEdit={() => {}} // You can implement customer edit if needed
+            onEdit={() => { }} // You can implement customer edit if needed
           />
         );
       case 'provider-details':
@@ -107,7 +118,7 @@ const BookingsDashboard = () => {
           <ProviderDetails
             providerId={selectedProviderId}
             onBack={handleBackToBooking}
-            onEdit={() => {}} // You can implement provider edit if needed
+            onEdit={() => { }} // You can implement provider edit if needed
           />
         );
       case 'trip-details':
@@ -115,7 +126,7 @@ const BookingsDashboard = () => {
           <TripDetails
             tripId={selectedTripId}
             onBack={handleBackToBooking}
-            onEdit={() => {}} // You can implement trip edit if needed
+            onEdit={() => { }} // You can implement trip edit if needed
           />
         );
       default:

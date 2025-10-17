@@ -4,6 +4,8 @@
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   direction: rtl;
+    min-height: 100vh;
+
 }
 
 .providers-header {
@@ -87,6 +89,7 @@
   margin-bottom: 24px;
   align-items: center;
   flex-wrap: wrap;
+  display: -webkit-inline-box
 }
 
 .search-box {
@@ -112,6 +115,11 @@
   font-size: 0.875rem;
   background: #fff;
   transition: border-color 0.2s ease;
+}
+لهف
+
+.slide-down{
+  display: contents;
 }
 
 .search-box input:focus {
@@ -141,8 +149,8 @@
   background: rgba(31, 193, 222, 0.05);
 }
 
-.filters-panel {
-  display: flex;
+.filters-panels {
+  display: contents;
   gap: 12px;
   width: 100%;
   padding: 16px;
@@ -151,65 +159,78 @@
   border: 1px solid #e5e7eb;
 }
 
-.filters-panel select {
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
+.filters-panels .select-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+
+.filters-panels select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+  padding: 8px 10px;
+  padding-inline-end: 36px;
+  border: 2px solid #e9ecef;
   border-radius: 6px;
   background: #fff;
   font-size: 0.875rem;
   color: #374151;
   cursor: pointer;
+  height: 48px;
+  line-height: 1;
 }
 
-.filters-panel select:focus {
+/* custom arrow (triangle) */
+.filters-panels .select-wrap::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 12px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #e9ecef;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.filters-panels .select-wrap:focus {
+  outline: none;
+  border-color: #1fc1de;
+  border: none;
+  box-shadow: 0 0 0 3px rgba(31, 193, 222, 0.1);
+}
+
+
+
+/* RTL adjustments: move padding and arrow to the other side */
+[dir="rtl"] .filters-panels select {
+  padding-inline-start: 36px;
+  padding-inline-end: 12px;
+}
+
+.filters-panels select:focus {
   outline: none;
   border-color: #1fc1de;
 }
 
-.providers-table-container {
-  overflow-x: auto;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-}
 
-.providers-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  font-size: 0.875rem;
-}
 
-.providers-table th {
-  background: white;
-  padding: 16px 12px;
-  text-align: right;
-  font-weight: 600;
-  color: #333;
-  border-bottom: 2px solid #e9ecef;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  user-select: none;
-}
-
-.providers-table th:hover {
-  background: #f8f9fa;
-  color: #1fc1de;
-}
-
-.providers-table th svg {
-  margin-right: 4px;
-  color: #9ca3af;
-  font-size: 0.75rem;
-}
-
-.providers-table td {
-  padding: 16px 12px;
-  border-bottom: 1px solid #f3f4f6;
-  vertical-align: middle;
-}
-
-.providers-table tr:hover {
-  background: #f9fafb;
+.filters-panels .select-wrap::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 12px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #374151;
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
 .provider-info {
@@ -218,14 +239,20 @@
   gap: 12px;
 }
 
+.provider-info span {
+  font-weight: 500;
+  color: #1f2937;
+}
+
 .provider-avatar {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid #e5e7eb;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
+
 }
 
 .provider-avatar:hover {
@@ -260,6 +287,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  justify-content: center;
 }
 
 .status-toggle-input {
@@ -272,6 +300,7 @@
   gap: 8px;
   cursor: pointer;
   user-select: none;
+  ;
 }
 
 .status-toggle-slider {
@@ -297,12 +326,12 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.status-toggle-input:checked + .status-toggle-label .status-toggle-slider {
+.status-toggle-input:checked+.status-toggle-label .status-toggle-slider {
   background: linear-gradient(135deg, #10b981, #059669);
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.status-toggle-input:checked + .status-toggle-label .status-toggle-slider::before {
+.status-toggle-input:checked+.status-toggle-label .status-toggle-slider::before {
   transform: translateX(-20px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
@@ -315,7 +344,7 @@
   text-align: center;
 }
 
-.status-toggle-input:checked + .status-toggle-label .status-toggle-text {
+.status-toggle-input:checked+.status-toggle-label .status-toggle-text {
   color: #059669;
 }
 
@@ -468,12 +497,12 @@
     gap: 16px;
     align-items: flex-start;
   }
-  
+
   .providers-actions {
     width: 100%;
     justify-content: flex-end;
   }
-  
+
   .search-box {
     min-width: 250px;
   }
@@ -483,41 +512,43 @@
   .providers-list {
     padding: 16px;
   }
-  
+
   .providers-filters {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .search-box {
     min-width: auto;
   }
-  
-  .filters-panel {
+
+  .filters-panels {
     flex-direction: column;
   }
-  
+
   .city-search-container {
     min-width: auto;
     width: 100%;
   }
-  
+
   .providers-table th,
   .providers-table td {
     padding: 12px 8px;
     font-size: 0.75rem;
   }
-  
+
   .provider-avatar {
     width: 45px;
     height: 45px;
+    /* flex-shrink: 0; */
+
   }
-  
+
   .action-buttons {
     flex-direction: column;
     gap: 4px;
   }
-  
+
   .btn-action {
     width: 28px;
     height: 28px;
@@ -676,7 +707,7 @@
 
 .city-dropdown::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-} 
+}
 
 /* Simple Loading State for Providers */
 .providers-loading {
@@ -704,6 +735,61 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-} 
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Hide less important columns on small screens */
+@media (max-width: 768px) {
+  .providers-table th:nth-child(4), /* المدينة */
+  .providers-table td:nth-child(4),
+  .providers-table th:nth-child(5), /* عدد الرحلات */
+  .providers-table td:nth-child(5),
+  .providers-table th:nth-child(6), /* عدد الحجوزات */
+  .providers-table td:nth-child(6),
+  .providers-table th:nth-child(7), /* إجمالي الأرباح */
+  .providers-table td:nth-child(7),
+  .providers-table th:nth-child(8), /* تاريخ الإنشاء */
+  .providers-table td:nth-child(8) {
+    display: none;
+  }
+}
+@media (max-width: 768px) {
+  .filters-panels {
+    display: block;
+    padding: 12px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    margin-top: 12px;
+  }
+
+  .filters-panels .select-wrap,
+  .city-search-container {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .providers-actions{
+    display: block;
+  }
+  .providers-filters{
+    display: table-caption;
+  }
+
+/* table width set karna zaroori hai */
+.providers-table {
+  width: 100%;
+  min-width: 800px;  /* 🔹 force scroll if screen chhoti ho */
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 0.875rem;
+}
+
+
+}

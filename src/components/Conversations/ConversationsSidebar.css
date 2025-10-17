@@ -13,12 +13,13 @@
 }
 
 /* Header Section */
-.sidebar-header {
+.sidebar-header-c {
   padding: 16px 16px 12px;
   border-bottom: 1px solid rgba(31, 193, 222, 0.1);
   background: linear-gradient(135deg, rgba(31, 193, 222, 0.05) 0%, rgba(0, 16, 98, 0.02) 100%);
+  align-items: baseline;
 }
-
+ 
 .sidebar-title-section {
   display: flex;
   align-items: center;
@@ -318,6 +319,7 @@
 /* Conversations List */
 .conversations-list {
   padding: 0;
+  background-color: padding-box;
 }
 
 .conversation-item {

@@ -1,11 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TripsList from './TripsList';
 import TripDetails from './TripDetails';
 import TripForm from './TripForm';
+import { useLocation } from 'react-router-dom';
 
 const TripsDashboard = () => {
+  const location = useLocation();
+  const { view, providerId, tripId, bookingId } = location.state || {};
+  console.log("navigation state: ", providerId, tripId, bookingId)
+
   const [currentView, setCurrentView] = useState('list');
   const [selectedTripId, setSelectedTripId] = useState(null);
+
+    useEffect(() => {
+     
+      if (tripId) {
+        setSelectedTripId(tripId);
+        setCurrentView("trip-details");
+      }
+    
+    }, [providerId, tripId, bookingId]);
 
   const handleViewTrip = (tripId) => {
     setSelectedTripId(tripId);

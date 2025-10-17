@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+
+# build output
+build/
+
+# environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# npm/yarn/pnpm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# editor/IDE settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# coverage reports
+coverage/
+
+# TailwindCSS JIT cache
+.tailwindcache/
+
+# Local Netlify folder
+.netlify
