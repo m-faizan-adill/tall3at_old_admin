@@ -16,8 +16,6 @@ import {
   faBan,
   faMapMarkerAlt,
   faTag,
-  faUsers,
-  faCalendarAlt,
   faArrowsAlt,
   faSearch,
   faTimes
