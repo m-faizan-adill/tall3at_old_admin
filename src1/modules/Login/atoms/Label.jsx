@@ -1,0 +1,18 @@
+import PropTypes from "prop-types";
+
+
+const Label = ({ htmlFor, children, className = "" }) => {
+  return (
+    <label htmlFor={htmlFor} className={`label ${className}`}>
+      {children}
+    </label>
+  );
+};
+
+Label.propTypes = {
+  htmlFor: PropTypes.string,
+  children: PropTypes.node.isRequired,
+  className: PropTypes.string,
+};
+
+export default Label;
